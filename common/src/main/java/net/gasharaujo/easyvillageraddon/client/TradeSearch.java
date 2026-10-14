@@ -17,7 +17,7 @@ public final class TradeSearch {
         LinkedHashSet<String> suggestions = new LinkedHashSet<>();
         suggestions.add(offer.result().getHoverName().getString());
         suggestions.addAll(Platform.enchantmentLabels(offer.result()));
-        suggestions.add(offer.costA().getHoverName().getString());
+        if (!offer.costA().isEmpty()) suggestions.add(offer.costA().getHoverName().getString());
         if (!offer.costB().isEmpty()) suggestions.add(offer.costB().getHoverName().getString());
         String searchable = normalize(Platform.searchText(offer.result()) + " " + Platform.searchText(offer.costA()) + " " + Platform.searchText(offer.costB()));
         return new Entry(offer, searchable, List.copyOf(suggestions));

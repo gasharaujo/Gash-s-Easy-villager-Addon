@@ -11,7 +11,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 public final class UiNetwork {
     public static void register(IEventBus bus) { bus.addListener(UiNetwork::registerPayloads); }
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar("3");
+        var registrar = event.registrar("4");
         registrar.playToClient(StatePayload.TYPE, StatePayload.CODEC, (message, context) ->
                 context.enqueueWork(() -> net.gasharaujo.easyvillageraddon.client.ClientUi.receive(message.state())));
         registrar.playToServer(ActionPayload.TYPE, ActionPayload.CODEC, (message, context) ->

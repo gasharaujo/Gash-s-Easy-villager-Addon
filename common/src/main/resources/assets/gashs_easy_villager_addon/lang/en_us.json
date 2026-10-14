@@ -77,5 +77,21 @@
   "gui.gashs_easy_villager_addon.input_villagers": "Input villagers",
   "gui.gashs_easy_villager_addon.status.output_full": "Waiting for output space.",
   "gui.gashs_easy_villager_addon.insert_short": "Insert a villager",
-  "gui.gashs_easy_villager_addon.back": "Back"
+  "gui.gashs_easy_villager_addon.back": "Back",
+  "gui.gashs_easy_villager_addon.match_any": "OR",
+  "gui.gashs_easy_villager_addon.clear_targets": "Clear",
+  "gui.gashs_easy_villager_addon.match_all_help": "AND: all targets must exist on the same villager",
+  "gui.gashs_easy_villager_addon.match_all": "AND",
+  "gui.gashs_easy_villager_addon.match_help": "OR: any target is enough. AND: every target must exist on the same villager.",
+  "gui.gashs_easy_villager_addon.generic_item": "Any item",
+  "gui.gashs_easy_villager_addon.exact_trade": "Exact trade",
+  "gui.gashs_easy_villager_addon.generic_help": "Exact trade matches item components. Any item accepts every enchantment, price and variant of that item.",
+  "gui.gashs_easy_villager_addon.targets_count": "Targets: %s",
+  "gui.gashs_easy_villager_addon.match_any_help": "OR: any one target is enough",
+  "gui.gashs_easy_villager_addon.selected_targets": "Selected targets",
+  "gui.gashs_easy_villager_addon.any_item": "Any %s",
+  "gui.gashs_easy_villager_addon.done": "Done",
+  "gui.gashs_easy_villager_addon.status.target_limit": "Maximum of 32 targets reached.",
+  "gui.gashs_easy_villager_addon.selection_help": "Click trades to toggle targets. Review and remove targets from every level here. Up to %s targets.",
+  "gui.gashs_easy_villager_addon.target_level": "Level %s"
 }

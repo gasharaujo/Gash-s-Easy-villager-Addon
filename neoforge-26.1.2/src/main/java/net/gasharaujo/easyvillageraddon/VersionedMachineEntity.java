@@ -12,6 +12,8 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     protected ItemStack targetResult = ItemStack.EMPTY;
     protected ItemStack targetCostA = ItemStack.EMPTY;
     protected ItemStack targetCostB = ItemStack.EMPTY;
+    protected final java.util.List<TradeTarget> targets = new java.util.ArrayList<>();
+    protected boolean matchAll;
     protected UUID owner;
     protected int targetLevel = 1;
     protected int bribeTicks;
@@ -24,6 +26,7 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     @Override protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput out) {
         super.saveAdditional(out);
         net.minecraft.world.ContainerHelper.saveAllItems(out, inventory);
+        out.store("Targets", TradeTarget.LIST_CODEC, targets); out.putBoolean("MatchAll", matchAll);
         if (owner != null) out.putString("Owner", owner.toString());
         if (!targetResult.isEmpty()) out.store("TargetResult", ItemStack.CODEC, targetResult);
         if (!targetCostA.isEmpty()) out.store("TargetCostA", ItemStack.CODEC, targetCostA);
@@ -34,6 +37,8 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     @Override protected void loadAdditional(net.minecraft.world.level.storage.ValueInput in) {
         super.loadAdditional(in);
         net.minecraft.world.ContainerHelper.loadAllItems(in, inventory);
+        targets.clear(); targets.addAll(in.read("Targets", TradeTarget.LIST_CODEC).orElse(java.util.List.of()).stream().limit(TradeTarget.MAX_TARGETS).toList());
+        matchAll = in.getBooleanOr("MatchAll", false);
         owner = parseOwner(in.getStringOr("Owner", ""));
         targetResult = in.read("TargetResult", ItemStack.CODEC).orElse(ItemStack.EMPTY);
         targetCostA = in.read("TargetCostA", ItemStack.CODEC).orElse(ItemStack.EMPTY);

@@ -5,6 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 public record UiAction(int menuId, int action, int value, int revision) {
     public static final int TOGGLE = 0, LEVEL = 1, CHOOSE = 2, TRADE = 3, RESET = 4, REFRESH = 5, PANE = 6;
+    public static final int TARGET_EXACT = 7, TARGET_GENERIC = 8, REMOVE_TARGET = 9, MATCH_MODE = 10, CLEAR_TARGETS = 11;
     public void write(FriendlyByteBuf b) {
         b.writeVarInt(menuId); b.writeVarInt(action); b.writeVarInt(value); b.writeVarInt(revision);
     }

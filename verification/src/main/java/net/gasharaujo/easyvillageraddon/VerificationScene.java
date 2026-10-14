@@ -32,7 +32,7 @@ public final class VerificationScene {
         MachineEntity machine = (MachineEntity) world.getBlockEntity(pos);
         machine.owner = player.getUUID();
         machine.setVillager(new ItemStack(ModItems.VILLAGER.get()));
-        if (kind != MachineKind.BRIBER) machine.setWorkstation(Blocks.LECTERN);
+        if (kind != MachineKind.BRIBER) machine.setWorkstation(kind == MachineKind.LEVELER ? Blocks.SMITHING_TABLE : Blocks.LECTERN);
         if (kind == MachineKind.DESNEURALIZER) {
             machine.getVillagerEntity().setVillagerXp(100);
             var queued = machine.removeVillager();
@@ -40,14 +40,12 @@ public final class VerificationScene {
         }
         if (kind == MachineKind.BRIBER) { machine.inventory.set(9, new ItemStack(Items.EMERALD, 64)); machine.bribeTicks = 120; }
         if (kind == MachineKind.LEVELER) {
-            machine.targetLevel = 3;
+            machine.targetLevel = 5;
             machine.rebuildCatalog();
             while (!machine.catalog.complete()) machine.catalog.step();
-            var target = machine.catalog.offers.stream().filter(o -> Platform.searchText(o.getResult()).contains("mending")).findFirst().orElse(machine.catalog.offers.get(0));
-            machine.select(target);
             machine.inventory.set(9, new ItemStack(Items.EMERALD, 64));
-            machine.inventory.set(10, new ItemStack(Items.BOOK, 64));
-            machine.inventory.set(11, new ItemStack(Items.PAPER, 64));
+            machine.inventory.set(10, new ItemStack(Items.COAL, 64));
+            machine.inventory.set(11, new ItemStack(Items.COAL, 64));
         }
         player.teleportTo(pos.getX() + 1, 100, 3);
         player.getInventory().clearContent();

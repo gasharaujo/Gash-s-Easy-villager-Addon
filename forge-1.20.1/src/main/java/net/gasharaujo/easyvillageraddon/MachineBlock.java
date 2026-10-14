@@ -29,7 +29,7 @@ public final class MachineBlock extends Block implements EntityBlock {
         }
     }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineEntity machine) machine.interact(player, player.getItemInHand(hand));
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineEntity machine) machine.interact(player, player.getItemInHand(hand), hand);
         return InteractionResult.SUCCESS;
     }
     @Override public void onRemove(BlockState state, Level level, BlockPos pos, BlockState next, boolean moving) {

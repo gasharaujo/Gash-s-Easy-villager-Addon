@@ -8,7 +8,7 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão de desenvolvimento `0.3.0-dev`, com quatro blocos e telas específicas:
+Versão de desenvolvimento `0.4.0-dev`, com quatro blocos e telas específicas:
 
 - **Advanced Trader:** escolhe uma troca de um villager de nível 1 sem XP e repete
   o sorteio normal do Minecraft até encontrá-la. Preserva o conjunto completo
@@ -24,9 +24,11 @@ Versão de desenvolvimento `0.3.0-dev`, com quatro blocos e telas específicas:
   sem esmeraldas e deixa de cobrar no limite vanilla dessa reputação (200 no
   1.20.1; 25 no 1.21.1 e 26.1.2).
   A configuração de reputação universal do Easy Villagers continua aplicável.
-- **Leveler:** escolhe oferta alvo e nível, negocia com os insumos fornecidos e
-  guarda os produtos na saída. Se a oferta não aparecer ao atingir o nível,
-  reinicia a profissão, nível e XP e repete. Para quando encontra o alvo.
+- **Leveler:** seleciona até 32 alvos exatos ou genéricos, cada um com seu nível.
+  Negocia com os insumos fornecidos e guarda os produtos na saída. **OU (OR)**
+  para ao encontrar qualquer alvo; **E (AND)** exige todos no mesmo villager.
+  Se a condição não for cumprida até o maior nível selecionado, reinicia
+  profissão, nível e XP e repete.
   Os insumos consumidos em tentativas anteriores não são reembolsados.
 
 Villagers bebês não são processados. Advanced Trader e Leveler atribuem a
@@ -38,6 +40,10 @@ profissão até passar pelo Desneuralizer ou reinício do Leveler.
 Clique com o item de villager para inseri-lo. No Advanced Trader e no Leveler,
 clique com uma estação de trabalho para inseri-la. Outro clique abre a interface.
 No Desneuralizer, o villager entra na fila de processamento.
+Com a mão principal vazia, **Shift + botão direito** retira primeiro o villager;
+outro clique após guardar o villager retira a bancada. Funciona também com um
+item na outra mão, como nos blocos do Easy Villagers. Aplica-se a Advanced Trader,
+Leveler e Briber; o Desneuralizer entrega villagers pelos slots de saída.
 
 O **Advanced Trader** usa o fundo da negociação vanilla: ofertas à esquerda,
 pagamento e resultado à direita, barra de XP e inventário abaixo. O pequeno botão
@@ -54,6 +60,17 @@ villager, profissão, alvo, nove slots de insumos e nove de produtos. O botão
 **Escolher alvo** abre a seleção; **Iniciar/Pausar** controla a automação.
 Esses três blocos não permitem compras manuais, inclusive pelo protocolo de rede.
 
+Na seleção do **Leveler**, alterne **Troca exata / Qualquer item**. O modo genérico
+aceita qualquer oferta que produza aquele item, ignorando encantamentos, demais
+componentes, preço e pagamentos. Por exemplo: qualquer picareta de diamante do
+ferreiro de ferramentas. O modo exato preserva os componentes do resultado e os
+tipos de pagamento; os preços continuam sendo sorteados naturalmente.
+Clique nas linhas para marcar/desmarcar vários alvos. A troca de nível preserva
+as seleções anteriores. **Alvos: N** revisa a lista de todos os níveis e permite
+remover cada alvo; **Limpar** remove todos. **OU/E** define a condição de parada.
+**Pronto** volta ao inventário, onde **Iniciar** começa a automação.
+Os alvos e o modo OU/E são salvos; configurações antigas de alvo único são migradas.
+
 Na janela de seleção do Advanced Trader/Leveler, o campo filtra enquanto se digita. Inclui
 autocomplete de nomes de itens e encantamentos, com sugestões clicáveis,
 setas para navegar e **Tab/Enter** para completar. Acentos e maiúsculas são
@@ -66,6 +83,8 @@ são elementos da interface e não ocupam slots de inventário.
 ![Busca com autocomplete na seleção](docs/ui/autocomplete.png)
 
 ![Estoque do Leveler com inventário real](docs/ui/inventory.png)
+
+![Alvos genéricos de níveis diferentes combinados com E](docs/ui/leveler-targets.png)
 
 ![Desneuralizer com entrada e saída de villagers](docs/ui/desneuralizer.png)
 

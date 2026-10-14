@@ -1,12 +1,12 @@
 # Verificação em 14/10/2026
 
-Versão: `0.3.0-dev`.
+Versão: `0.4.0-dev`.
 
 | Plataforma | Compilação final | Servidor com Easy Villagers |
 | --- | --- | --- |
-| Forge 1.20.1 / 47.4.10 | Passou | 203 verificações passaram |
-| NeoForge 1.21.1 / 21.1.248 | Passou | 203 verificações passaram |
-| NeoForge 26.1.2 / 26.1.2.98 | Passou | 203 verificações passaram |
+| Forge 1.20.1 / 47.4.10 | Passou | 287 verificações passaram |
+| NeoForge 1.21.1 / 21.1.248 | Passou | 287 verificações passaram |
+| NeoForge 26.1.2 / 26.1.2.98 | Passou | 287 verificações passaram |
 
 Easy Villagers: 1.1.39 no Forge; 1.1.47 nas versões NeoForge.
 
@@ -27,6 +27,14 @@ O Desneuralizer é testado com fila de villagers, saída cheia sem consumir a
 entrada e transferência do villager processado à saída. Os menus dos três
 processadores rejeitam resultado de negociação manual e não oferecem trocas.
 
+Na versão 0.4, a retirada é exercitada pelo `ServerPlayerGameMode.useItemOn`
+nativo, com Shift e item na outra mão: villager primeiro, bancada depois,
+sem abrir GUI e sem perder XP/nome. O Leveler usa o catálogo real do ferreiro
+de ferramentas para verificar picareta de diamante genérica e variantes de
+encantamento, seleção entre níveis, OU antecipado, E com todos no mesmo villager,
+reinício quando só parte dos alvos aparece, remoção/limpeza e migração do alvo
+único. Os alvos, componentes, níveis e modo E/OU sobrevivem ao salvamento.
+
 ## Cliente gráfico
 
 As três versões foram abertas no cliente Minecraft em mundos isolados. O teste
@@ -36,6 +44,9 @@ Foram verificadas a renderização das quatro telas, pesquisa por encantamento,
 autocomplete com Tab, seleção de Remendo como oferta inicial, preenchimento
 dos pagamentos, retirada real do livro pelo protocolo de inventário e XP do
 villager. As telas do Leveler e Briber também foram capturadas durante execução.
+O marcador adicional `ADDON_CLIENT_TARGETS_PASSED count=2 and=true` confirma
+o clique nos widgets do seletor: item genérico, segundo alvo em outro nível,
+troca de OU para E, remoção individual e combinação de alvos genéricos/exatos.
 
 As capturas foram inspecionadas visualmente em janela 720p com escala 3.
 Advanced Trader usa o fundo de negociação vanilla (villager2.png no Forge

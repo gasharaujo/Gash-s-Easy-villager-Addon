@@ -64,6 +64,6 @@ abstract class VersionedScreen extends AbstractContainerScreen<MachineMenu> {
             graphics.itemDecorations(font, stack, x, y);
         }
         public void tooltip(net.minecraft.world.item.ItemStack stack, int x, int y) { graphics.setTooltipForNextFrame(font, stack, x, y); }
-        public void tooltip(net.minecraft.network.chat.Component text, int x, int y) { graphics.setTooltipForNextFrame(font, text, x, y); }
+        public void tooltip(net.minecraft.network.chat.Component text, int x, int y) { graphics.setTooltipForNextFrame(font, font.split(text, Math.max(80, Math.min(240, VersionedScreen.this.width - 20))), x, y); }
     }
 }

@@ -16,6 +16,29 @@ public final class VerificationMod {
         var set = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.TRADE_SET).getOptional(key).orElseThrow();
         set.randomSequence().ifPresent(id -> server.getServer().getRandomSequence(id).setSeed(seed));
     }
+    static net.minecraft.world.item.trading.MerchantOffer testOffer(net.minecraft.world.item.ItemStack result, net.minecraft.world.item.ItemStack cost) { return new net.minecraft.world.item.trading.MerchantOffer(new net.minecraft.world.item.trading.ItemCost(cost.getItem(), cost.getCount()), result, 12, 1, 0.05F); }
+    static void interactionChecks(MachineEntity machine) {
+        var world = (net.minecraft.server.level.ServerLevel) machine.getLevel();
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(world);
+        player.containerMenu = player.inventoryMenu;
+        player.setPos(machine.getBlockPos().getX()+0.5, machine.getBlockPos().getY()+0.5, machine.getBlockPos().getZ()+0.5);
+        player.getInventory().clearContent(); player.setShiftKeyDown(true);
+        machine.getVillagerEntity().setVillagerXp(12);
+        machine.getVillagerEntity().setCustomName(net.minecraft.network.chat.Component.literal("Shift test"));
+        player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE));
+        var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(machine.getBlockPos()), net.minecraft.core.Direction.UP, machine.getBlockPos(), false);
+        player.gameMode.useItemOn(player, world, player.getMainHandItem(), net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+        VerificationChecks.check(!machine.hasVillager() && machine.hasWorkstation(), "Native crouch-right-click withdraws villager before workstation with occupied offhand");
+        var stored = player.getMainHandItem().copy();
+        VerificationChecks.check(stored.getItem() instanceof de.maxhenkel.easyvillagers.items.VillagerItem && stored.getCount() == 1, "Withdrawn villager goes to the actual clicked hand");
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+        player.gameMode.useItemOn(player, world, player.getMainHandItem(), net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+        VerificationChecks.check(!machine.hasWorkstation() && player.getMainHandItem().is(net.minecraft.world.level.block.Blocks.LECTERN.asItem()), "Next native crouch-right-click withdraws workstation");
+        VerificationChecks.check(player.containerMenu == player.inventoryMenu, "Withdrawal does not open a GUI");
+        machine.setVillager(stored);
+        VerificationChecks.check(machine.getVillagerEntity().getVillagerXp() == 12 && machine.getVillagerEntity().getName().getString().equals("Shift test"), "Withdrawal preserves villager XP and identity");
+        player.setShiftKeyDown(false); player.getInventory().clearContent();
+    }
     static void menuChecks(MachineEntity machine) {
         var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft((net.minecraft.server.level.ServerLevel) machine.getLevel());
         player.setPos(machine.getBlockPos().getX()+0.5, machine.getBlockPos().getY()+0.5, machine.getBlockPos().getZ()+0.5);
@@ -72,6 +95,9 @@ public final class VerificationMod {
         loaded.setLevel(machine.getLevel());
         VerificationChecks.check(machine.getVillagerEntity().getOffers().size() == loaded.getVillagerEntity().getOffers().size(), "Offers survive save/reload without stale trades");
         VerificationChecks.check(machine.getVillagerEntity().getGossips().getReputation(machine.owner, t -> true) == loaded.getVillagerEntity().getGossips().getReputation(machine.owner, t -> true), "Reputation survives save/reload");
+        var beforeTargets = machine.effectiveTargets(); var afterTargets = loaded.effectiveTargets();
+        VerificationChecks.check(machine.matchAll == loaded.matchAll && beforeTargets.size() == afterTargets.size(), "AND/OR mode and target count survive save/reload");
+        for (int i = 0; i < beforeTargets.size(); i++) VerificationChecks.check(beforeTargets.get(i).sameDefinition(afterTargets.get(i)), "Target level, generic flag and item components survive save/reload");
         VerificationChecks.check(machine.owner.equals(loaded.owner), "Placer survives save/reload");
         VerificationChecks.check(machine.enabled == loaded.enabled && machine.targetLevel == loaded.targetLevel, "Automation state survives save/reload");
         VerificationChecks.check(Platform.sameStack(machine.targetResult, loaded.targetResult), "Target components survive save/reload");

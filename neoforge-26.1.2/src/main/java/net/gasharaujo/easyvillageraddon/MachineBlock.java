@@ -33,7 +33,7 @@ public final class MachineBlock extends Block implements EntityBlock {
         return InteractionResult.SUCCESS;
     }
     @Override protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineEntity machine) machine.interact(player, stack);
+        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineEntity machine) machine.interact(player, stack, hand);
         return InteractionResult.SUCCESS;
     }
 

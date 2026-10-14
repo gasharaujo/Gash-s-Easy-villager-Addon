@@ -1,3 +1,12 @@
+# 0.4.0-dev
+
+- Shift + botão direito com mão principal vazia retira villager e depois bancada,
+  inclusive com item na outra mão, usando a interação nativa do bloco.
+- Leveler com múltiplos alvos exatos ou genéricos e seleção em diferentes níveis.
+- Alvo genérico aceita qualquer variante/encantamento do item selecionado.
+- OU aceita qualquer alvo; E exige todos no mesmo villager.
+- Revisão/remoção individual, limpeza, salvamento de alvos e migração do alvo único.
+
 # 0.3.0-dev
 
 - Advanced Trader sorteia conjuntos completos de ofertas pelo caminho nativo do

@@ -25,6 +25,7 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     private int cycleTicks;
     java.util.UUID viewer;
     String status = "";
+    int targetsRevision;
 
     public MachineEntity(BlockPos pos, BlockState state) { super(pos, state); }
     public MachineKind kind() { return ((MachineBlock) getBlockState().getBlock()).kind; }
@@ -46,8 +47,21 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
         }
     }
 
-    public void interact(Player player, ItemStack held) {
+    public void interact(Player player, ItemStack held) { interact(player, held, net.minecraft.world.InteractionHand.MAIN_HAND); }
+    public void interact(Player player, ItemStack held, net.minecraft.world.InteractionHand hand) {
         if (level.isClientSide()) return;
+        if (player.isShiftKeyDown() && kind() != MachineKind.DESNEURALIZER && (hasVillager() || hasWorkstation())) {
+            if (viewer != null && level instanceof net.minecraft.server.level.ServerLevel server) {
+                var other = server.getServer().getPlayerList().getPlayer(viewer);
+                if (other != null && other.containerMenu instanceof MachineMenu menu && menu.machine == this) other.closeContainer();
+            }
+            ItemStack removed = hasVillager() ? removeVillager() : new ItemStack(removeWorkstation());
+            invalidateCatalog();
+            if (held.isEmpty()) player.setItemInHand(hand, removed);
+            else if (!player.getInventory().add(removed)) player.drop(removed, false);
+            level.playSound(null, worldPosition, net.minecraft.sounds.SoundEvents.VILLAGER_CELEBRATE, net.minecraft.sounds.SoundSource.BLOCKS, 1F, 1F);
+            return;
+        }
         if (kind() == MachineKind.DESNEURALIZER && held.getItem() instanceof VillagerItem) {
             for (int i = 9; i < 13; i++) if (inventory.get(i).isEmpty()) {
                 inventory.set(i, held.copyWithCount(1)); held.shrink(1); setChanged(); return;
@@ -102,9 +116,7 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             attempts = 0; enabled = true;
             status = "gui.gashs_easy_villager_addon.status.rerolling";
         } else {
-            targetResult = choice.getResult().copy();
-            targetCostA = choice.getBaseCostA().copy();
-            targetCostB = choice.getCostB().copy();
+            targets.clear(); targets.add(TradeTarget.of(targetLevel, false, choice)); syncLegacyTarget(); targetsRevision++;
             enabled = false;
             status = "gui.gashs_easy_villager_addon.status.target_selected";
         }
@@ -199,12 +211,13 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     }
 
     private void leveler(EasyVillagerEntity v) {
-        if (targetResult.isEmpty() || !hasWorkstation()) { status = "gui.gashs_easy_villager_addon.select_target_help"; return; }
-        boolean found = v.getOffers().stream().anyMatch(this::matchesTarget);
-        if (found && Platform.villagerLevel(v) >= targetLevel) {
+        var goals = effectiveTargets();
+        if (goals.isEmpty() || !hasWorkstation()) { status = "gui.gashs_easy_villager_addon.select_target_help"; return; }
+        if (targetsSatisfied(v.getOffers(), Platform.villagerLevel(v))) {
             enabled = false; status = "gui.gashs_easy_villager_addon.status.target_found"; setChanged(); return;
         }
-        if (Platform.villagerLevel(v) >= targetLevel) {
+        int highestLevel = goals.stream().mapToInt(TradeTarget::level).max().orElse(1);
+        if (Platform.villagerLevel(v) >= highestLevel) {
             resetProfession(true);
             attempts++;
             status = "gui.gashs_easy_villager_addon.status.retry";
@@ -226,6 +239,39 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             setChanged(); return;
         }
         status = "gui.gashs_easy_villager_addon.status.waiting_items";
+    }
+
+    public List<TradeTarget> effectiveTargets() {
+        if (kind() != MachineKind.LEVELER) return List.of();
+        if (!targets.isEmpty()) return List.copyOf(targets);
+        return targetResult.isEmpty() ? List.of() : List.of(new TradeTarget(targetLevel, false, targetResult.copy(), targetCostA.copy(), targetCostB.copy()));
+    }
+    void migrateTargets() { if (targets.isEmpty()) targets.addAll(effectiveTargets()); }
+    private void syncLegacyTarget() {
+        targetResult = targets.isEmpty() ? ItemStack.EMPTY : targets.get(0).result().copy();
+        targetCostA = targets.isEmpty() ? ItemStack.EMPTY : targets.get(0).costA().copy();
+        targetCostB = targets.isEmpty() ? ItemStack.EMPTY : targets.get(0).costB().copy();
+    }
+    boolean targetsSatisfied(List<MerchantOffer> offers, int level) {
+        var goals = effectiveTargets();
+        if (goals.isEmpty()) return false;
+        java.util.function.Predicate<TradeTarget> found = goal -> level >= goal.level() && offers.stream().anyMatch(goal::matches);
+        return matchAll ? goals.stream().allMatch(found) : goals.stream().anyMatch(found);
+    }
+    void toggleTarget(MerchantOffer offer, boolean generic) {
+        migrateTargets(); var goal = TradeTarget.of(targetLevel, generic, offer);
+        int existing = -1;
+        for (int i = 0; i < targets.size(); i++) if (targets.get(i).sameDefinition(goal)) { existing = i; break; }
+        if (existing >= 0) targets.remove(existing);
+        else if (targets.size() < TradeTarget.MAX_TARGETS) targets.add(goal);
+        else { status = "gui.gashs_easy_villager_addon.status.target_limit"; return; }
+        targetsChanged();
+    }
+    void removeTarget(int index) { migrateTargets(); if (index >= 0 && index < targets.size()) { targets.remove(index); targetsChanged(); } }
+    void clearTargets() { targets.clear(); targetsChanged(); }
+    void targetsChanged() {
+        syncLegacyTarget(); enabled = false; targetsRevision++; setChanged();
+        status = "gui.gashs_easy_villager_addon.status.target_selected";
     }
 
     private boolean matchesTarget(MerchantOffer offer) {

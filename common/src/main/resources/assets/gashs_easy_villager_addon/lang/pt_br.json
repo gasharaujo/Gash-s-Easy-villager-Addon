@@ -77,5 +77,21 @@
   "gui.gashs_easy_villager_addon.input_villagers": "Villagers de entrada",
   "gui.gashs_easy_villager_addon.status.output_full": "Aguardando espaço na saída.",
   "gui.gashs_easy_villager_addon.insert_short": "Insira um villager",
-  "gui.gashs_easy_villager_addon.back": "Voltar"
+  "gui.gashs_easy_villager_addon.back": "Voltar",
+  "gui.gashs_easy_villager_addon.match_any": "OU",
+  "gui.gashs_easy_villager_addon.clear_targets": "Limpar",
+  "gui.gashs_easy_villager_addon.match_all_help": "E: exige todos os alvos no mesmo villager",
+  "gui.gashs_easy_villager_addon.match_all": "E",
+  "gui.gashs_easy_villager_addon.match_help": "OU (OR): basta um alvo. E (AND): todos devem existir no mesmo villager.",
+  "gui.gashs_easy_villager_addon.generic_item": "Qualquer item",
+  "gui.gashs_easy_villager_addon.exact_trade": "Troca exata",
+  "gui.gashs_easy_villager_addon.generic_help": "Troca exata preserva os componentes do item. Qualquer item aceita todos os encantamentos, preços e variantes desse item.",
+  "gui.gashs_easy_villager_addon.targets_count": "Alvos: %s",
+  "gui.gashs_easy_villager_addon.match_any_help": "OU: basta encontrar um dos alvos",
+  "gui.gashs_easy_villager_addon.selected_targets": "Alvos selecionados",
+  "gui.gashs_easy_villager_addon.any_item": "Qualquer %s",
+  "gui.gashs_easy_villager_addon.done": "Pronto",
+  "gui.gashs_easy_villager_addon.status.target_limit": "Limite de 32 alvos atingido.",
+  "gui.gashs_easy_villager_addon.selection_help": "Clique nas trocas para marcar/desmarcar. Aqui você revisa e remove alvos de todos os níveis. Até %s alvos.",
+  "gui.gashs_easy_villager_addon.target_level": "Nível %s"
 }

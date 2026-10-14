@@ -24,7 +24,9 @@ public final class VerificationChecks {
             desneuralizer();
             briber();
             leveler();
+            levelerTargets();
             VerificationMod.menuChecks(machine(MachineKind.ADVANCED_TRADER));
+            VerificationMod.interactionChecks(machine(MachineKind.ADVANCED_TRADER));
             for (var kind : MachineKind.values()) if (kind != MachineKind.ADVANCED_TRADER) VerificationMod.processorMenuChecks(machine(kind));
             System.out.println("ADDON_VERIFICATION_PASSED assertions=" + assertions);
         } catch (Throwable failure) {
@@ -166,6 +168,53 @@ public final class VerificationChecks {
         machine.targetCostB = found.getCostB().copy();
         ticks(machine, 20);
         check(!machine.enabled, "Leveler stops when target is found");
+        VerificationMod.persistence(machine);
+    }
+
+    private static void levelerTargets() {
+        MachineEntity machine = machine(MachineKind.LEVELER);
+        machine.setWorkstation(Blocks.SMITHING_TABLE); machine.targetLevel = 5; machine.rebuildCatalog();
+        while (!machine.catalog.complete()) machine.catalog.step();
+        var pickaxes = machine.catalog.offers.stream().filter(o -> o.getResult().is(Items.DIAMOND_PICKAXE)).toList();
+        check(!pickaxes.isEmpty(), "Actual toolsmith catalog exposes diamond pickaxes");
+        var pick = pickaxes.get(0);
+        var variant = pickaxes.stream().filter(o -> !Platform.sameStack(o.getResult(), pick.getResult())).findFirst().orElseThrow();
+        var generic = TradeTarget.of(5, true, pick); var exact = TradeTarget.of(5, false, pick);
+        check(generic.matches(pick) && generic.matches(variant), "Generic pickaxe accepts different enchantments");
+        check(exact.matches(pick) && !exact.matches(variant), "Exact target preserves enchantments");
+        machine.toggleTarget(pick, true);
+        check(machine.targets.size() == 1 && machine.targets.get(0).generic(), "Generic target is selected");
+        machine.toggleTarget(variant, true);
+        check(machine.targets.isEmpty() && machine.targetResult.isEmpty(), "Another variant toggles the same generic item without duplicates");
+        machine.toggleTarget(pick, true);
+        machine.targetLevel = 1;
+        var other = VerificationMod.testOffer(new ItemStack(Items.DIAMOND), new ItemStack(Items.EMERALD, 7));
+        machine.toggleTarget(other, false);
+        check(machine.targets.size() == 2 && machine.targets.get(0).level() == 5 && machine.targets.get(1).level() == 1, "Selections retain their own unlock levels");
+        check(!machine.targetsSatisfied(java.util.List.of(pick), 1), "Later-level target cannot match prematurely");
+        machine.matchAll = false;
+        check(machine.targetsSatisfied(java.util.List.of(other), 1), "OR stops at an earlier-level match");
+        check(machine.targetsSatisfied(java.util.List.of(variant), 5), "OR accepts any selected target");
+        machine.matchAll = true;
+        check(!machine.targetsSatisfied(java.util.List.of(variant), 5) && !machine.targetsSatisfied(java.util.List.of(other), 5), "AND never accumulates matches from different villagers or rolls");
+        check(machine.targetsSatisfied(java.util.List.of(variant, other), 5), "AND accepts all selected targets on the same villager");
+        VerificationMod.persistence(machine);
+        var v = machine.getVillagerEntity();
+        while (Platform.villagerLevel(v) < 5) Platform.levelUp(v);
+        var offers = new net.minecraft.world.item.trading.MerchantOffers(); offers.add(variant); v.setOffers(offers);
+        machine.enabled = true; ticks(machine, 20);
+        check(machine.enabled && machine.attempts == 1 && Platform.villagerLevel(v) == 1, "AND resets and continues when only one target exists at the highest level");
+        while (Platform.villagerLevel(v) < 5) Platform.levelUp(v);
+        offers = new net.minecraft.world.item.trading.MerchantOffers(); offers.add(variant); offers.add(other); v.setOffers(offers);
+        ticks(machine, 20);
+        check(!machine.enabled && machine.status.endsWith("target_found"), "AND automation stops after all targets are found together");
+        machine.removeTarget(0);
+        check(machine.targets.size() == 1 && !machine.targets.get(0).generic(), "Selected target can be removed independently");
+        machine.clearTargets();
+        check(machine.effectiveTargets().isEmpty() && !machine.enabled, "Clear removes all targets including the legacy preview");
+        machine.targetResult = other.getResult().copy(); machine.targetCostA = other.getBaseCostA().copy(); machine.targetCostB = other.getCostB().copy(); machine.targetLevel = 1;
+        machine.migrateTargets();
+        check(machine.targets.size() == 1 && machine.targets.get(0).matches(other), "Version 0.3 single target migrates without loss");
         VerificationMod.persistence(machine);
     }
 }

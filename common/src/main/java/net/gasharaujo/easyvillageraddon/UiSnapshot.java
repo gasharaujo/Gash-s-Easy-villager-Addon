@@ -8,6 +8,9 @@ import java.util.List;
 public final class UiSnapshot {
     public int menuId, kind, level = 1, xp, targetLevel = 1, bribeTicks, reputation, reputationLimit, attempts;
     public int revision, offset, catalogSize;
+    public int targetsRevision;
+    public boolean matchAll;
+    public List<TradeTarget> targets = List.of();
     public boolean enabled, hasVillager, hasWorkstation, canChooseInitial, catalogComplete;
     public String name = "", profession = "none", status = "";
     public ItemStack target = ItemStack.EMPTY;
@@ -22,6 +25,8 @@ public final class UiSnapshot {
         b.writeBoolean(canChooseInitial); b.writeBoolean(catalogComplete);
         b.writeUtf(name, 256); b.writeUtf(profession, 256); b.writeUtf(status, 256);
         UiNetwork.writeStack(b, target);
+        b.writeBoolean(matchAll); b.writeVarInt(targetsRevision); b.writeVarInt(targets.size());
+        targets.forEach(goal -> goal.write(b));
         b.writeVarInt(entries.size());
         entries.forEach(entry -> entry.write(b));
     }
@@ -35,6 +40,12 @@ public final class UiSnapshot {
         s.canChooseInitial = b.readBoolean(); s.catalogComplete = b.readBoolean();
         s.name = b.readUtf(256); s.profession = b.readUtf(256); s.status = b.readUtf(256);
         s.target = UiNetwork.readStack(b);
+        s.matchAll = b.readBoolean(); s.targetsRevision = b.readVarInt();
+        int goals = b.readVarInt();
+        if (goals < 0 || goals > TradeTarget.MAX_TARGETS) throw new IllegalArgumentException("Invalid target count");
+        List<TradeTarget> targets = new ArrayList<>(goals);
+        for (int i = 0; i < goals; i++) targets.add(TradeTarget.read(b));
+        s.targets = targets;
         int size = b.readVarInt();
         if (size < 0 || size > 48) throw new IllegalArgumentException("Invalid catalog batch");
         s.entries = new ArrayList<>(size);

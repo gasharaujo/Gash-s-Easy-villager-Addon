@@ -12,6 +12,8 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     protected ItemStack targetResult = ItemStack.EMPTY;
     protected ItemStack targetCostA = ItemStack.EMPTY;
     protected ItemStack targetCostB = ItemStack.EMPTY;
+    protected final java.util.List<TradeTarget> targets = new java.util.ArrayList<>();
+    protected boolean matchAll;
     protected UUID owner;
     protected int targetLevel = 1;
     protected int bribeTicks;
@@ -31,6 +33,7 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     @Override protected void saveAdditional(net.minecraft.nbt.CompoundTag tag) {
         super.saveAdditional(tag);
         net.minecraft.world.ContainerHelper.saveAllItems(tag, inventory);
+        TradeTarget.LIST_CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, targets).result().ifPresent(data -> tag.put("Targets", data)); tag.putBoolean("MatchAll", matchAll);
         if (owner != null) tag.putString("Owner", owner.toString());
         if (!targetResult.isEmpty()) tag.put("TargetResult", targetResult.save(new net.minecraft.nbt.CompoundTag()));
         if (!targetCostA.isEmpty()) tag.put("TargetCostA", targetCostA.save(new net.minecraft.nbt.CompoundTag()));
@@ -41,6 +44,9 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     @Override public void load(net.minecraft.nbt.CompoundTag tag) {
         super.load(tag);
         net.minecraft.world.ContainerHelper.loadAllItems(tag, inventory);
+        targets.clear();
+        if (tag.contains("Targets")) targets.addAll(TradeTarget.LIST_CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag.get("Targets")).result().orElse(java.util.List.of()).stream().limit(TradeTarget.MAX_TARGETS).toList());
+        matchAll = tag.getBoolean("MatchAll");
         owner = parseOwner(tag.getString("Owner"));
         targetResult = ItemStack.of(tag.getCompound("TargetResult"));
         targetCostA = ItemStack.of(tag.getCompound("TargetCostA"));

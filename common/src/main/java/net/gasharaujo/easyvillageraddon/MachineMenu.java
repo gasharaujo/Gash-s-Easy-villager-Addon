@@ -25,6 +25,7 @@ public final class MachineMenu extends MerchantMenu {
     public UiSnapshot state = new UiSnapshot();
     public final List<OfferView> catalog = new ArrayList<>();
     public int clientPane;
+    public boolean clientGenericTargets, clientSelectedTargets;
     private final Inventory playerInventory;
     private final Merchant merchant;
     private final MerchantContainer trading;
@@ -136,11 +137,24 @@ public final class MachineMenu extends MerchantMenu {
             }
             case UiAction.LEVEL -> {
                 if (kind() == MachineKind.LEVELER && action.value() >= 1 && action.value() <= 5 && action.value() != machine.targetLevel) {
-                    machine.targetLevel = action.value(); machine.targetResult = ItemStack.EMPTY;
-                    machine.targetCostA = ItemStack.EMPTY; machine.targetCostB = ItemStack.EMPTY;
+                    machine.migrateTargets(); machine.targetLevel = action.value();
                     machine.invalidateCatalog();
                 }
             }
+            case UiAction.TARGET_EXACT, UiAction.TARGET_GENERIC -> {
+                if (kind() == MachineKind.LEVELER && action.revision() == revision && sentCatalog == machine.catalog && machine.catalog != null
+                        && action.value() >= 0 && action.value() < Math.min(sentCount, machine.catalog.offers.size()))
+                    machine.toggleTarget(machine.catalog.offers.get(action.value()), action.action() == UiAction.TARGET_GENERIC);
+            }
+            case UiAction.REMOVE_TARGET -> {
+                if (kind() == MachineKind.LEVELER && action.revision() == machine.targetsRevision) machine.removeTarget(action.value());
+            }
+            case UiAction.MATCH_MODE -> {
+                if (kind() == MachineKind.LEVELER && (action.value() == 0 || action.value() == 1)) {
+                    machine.migrateTargets(); machine.matchAll = action.value() == 1; machine.targetsChanged();
+                }
+            }
+            case UiAction.CLEAR_TARGETS -> { if (kind() == MachineKind.LEVELER) machine.clearTargets(); }
             case UiAction.CHOOSE -> {
                 if ((kind() == MachineKind.ADVANCED_TRADER || kind() == MachineKind.LEVELER)
                         && action.revision() == revision && sentCatalog == machine.catalog && machine.catalog != null
@@ -200,6 +214,7 @@ public final class MachineMenu extends MerchantMenu {
             s.reputation = v == null || machine.owner == null ? 0 : v.getGossips().getReputation(machine.owner, t -> t == GossipType.MINOR_POSITIVE);
             s.reputationLimit = GossipType.MINOR_POSITIVE.max; s.status = machine.status;
             s.target = machine.targetResult.copy(); s.revision = revision; s.offset = sentCount;
+            s.targets = machine.effectiveTargets(); s.matchAll = machine.matchAll; s.targetsRevision = machine.targetsRevision;
             s.catalogSize = available; s.catalogComplete = sentCatalog != null && sentCatalog.complete();
             List<OfferView> batch = new ArrayList<>();
             int end = Math.min(available, sentCount + 48);
