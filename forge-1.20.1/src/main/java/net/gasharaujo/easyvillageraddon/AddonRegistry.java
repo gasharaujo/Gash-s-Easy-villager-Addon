@@ -18,6 +18,8 @@ final class AddonRegistry {
     static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, ID);
     static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, ID);
     static final DeferredRegister<BlockEntityType<?>> ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, ID);
+    static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, ID);
+    public static final Supplier<net.minecraft.world.inventory.MenuType<MachineMenu>> MENU = MENUS.register("machine", () -> net.minecraftforge.common.extensions.IForgeMenuType.create((id, inventory, data) -> new MachineMenu(id, inventory)));
     static final Map<MachineKind, Supplier<MachineBlock>> MACHINES = new LinkedHashMap<>();
     static final Supplier<BlockEntityType<MachineEntity>> MACHINE;
     static {
@@ -32,6 +34,9 @@ final class AddonRegistry {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         ENTITIES.register(bus);
+        MENUS.register(bus);
+        UiNetwork.register(bus);
+        ClientRegistration.register(bus);
         bus.addListener(AddonRegistry::creative);
     }
     private static void creative(net.minecraftforge.event.BuildCreativeModeTabContentsEvent event) {

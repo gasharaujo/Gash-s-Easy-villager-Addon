@@ -16,8 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-final class Platform {
-    static boolean sameStack(ItemStack a, ItemStack b) { return ItemStack.isSameItemSameTags(a, b); }
+public final class Platform {
+    public static String profession(EasyVillagerEntity v) { return BuiltInRegistries.VILLAGER_PROFESSION.getKey(v.getVillagerData().getProfession()).toString(); }
+    public static boolean sameStack(ItemStack a, ItemStack b) { return ItemStack.isSameItemSameTags(a, b); }
     static void name(ItemStack stack, String text) { stack.setHoverName(Component.literal(text)); }
     static int villagerLevel(EasyVillagerEntity v) { return v.getVillagerData().getLevel(); }
     static boolean unemployed(EasyVillagerEntity v) { return v.getVillagerData().getProfession() == VillagerProfession.NONE; }
@@ -45,7 +46,8 @@ final class Platform {
         tag.putInt("maxUses", Integer.MAX_VALUE); tag.putInt("uses", 0);
         return new MerchantOffer(tag);
     }
-    static String searchText(ItemStack stack) {
+    public static List<String> enchantmentLabels(ItemStack stack) { return EnchantmentHelper.getEnchantments(stack).entrySet().stream().map(entry -> entry.getKey().getFullname(entry.getValue()).getString()).toList(); }
+    public static String searchText(ItemStack stack) {
         if (stack.isEmpty()) return "";
         StringBuilder text = new StringBuilder(stack.getHoverName().getString()).append(' ').append(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         EnchantmentHelper.getEnchantments(stack).forEach((enchantment, level) -> text.append(' ').append(enchantment.getFullname(level).getString())

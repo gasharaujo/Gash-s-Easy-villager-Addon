@@ -4,23 +4,36 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 @Mod("gashs_easy_villager_addon_verification")
 public final class VerificationMod {
     public VerificationMod() {
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> VerificationChecks.run(event.getServer()));
+        if (Boolean.getBoolean("addon.uiVerification") && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) net.gasharaujo.easyvillageraddon.client.VerificationClient.install();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) -> VerificationScene.commands(event.getDispatcher()));
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> { if (!Boolean.getBoolean("addon.uiVerification")) VerificationChecks.run(event.getServer()); });
     }
     static void menuChecks(MachineEntity machine) {
         var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft((net.minecraft.server.level.ServerLevel) machine.getLevel());
-        var menu = new MachineMenu(1, player.getInventory(), machine, "");
+        player.setPos(machine.getBlockPos().getX()+0.5, machine.getBlockPos().getY()+0.5, machine.getBlockPos().getZ()+0.5);
+        player.getInventory().clearContent();
+        var menu = new MachineMenu(1, player.getInventory(), machine);
         player.containerMenu = menu;
-        for (int i = 0; i < 10000 && !machine.catalog.complete(); i++) machine.catalog.step();
-        menu.broadcastChanges();
-        menu.clicked(27, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
-        VerificationChecks.check(menu.getCarried().isEmpty(), "Catalog preview cannot be extracted");
-        VerificationChecks.check(menu.quickMoveStack(player, 27).isEmpty(), "Catalog preview cannot be shift-clicked");
-        var search = new SearchMenu(2, player.getInventory(), machine, "");
-        player.containerMenu = search;
-        search.setItemName("remendo");
-        VerificationChecks.check("remendo".equals(machine.lastSearch.get(player.getUUID())), "Vanilla rename protocol applies search");
-        search.removed(player);
-        VerificationChecks.check(search.getCarried().isEmpty(), "Search UI does not mint ghost paper");
+        VerificationChecks.check(menu.getType() == AddonRegistry.MENU.get(), "Dedicated addon menu type is registered");
+        VerificationChecks.check(menu.slots.size() == 59, "Catalog previews never become inventory slots");
+        VerificationChecks.check(menu.getSlot(2) instanceof net.minecraft.world.inventory.MerchantResultSlot, "Result uses the vanilla merchant transaction slot");
+        VerificationChecks.check(menu.getSlot(39).mayPlace(new net.minecraft.world.item.ItemStack(de.maxhenkel.easyvillagers.items.ModItems.VILLAGER.get())), "Villager slot accepts a real Easy Villagers item");
+        VerificationChecks.check(!menu.getSlot(39).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Villager slot rejects unrelated items");
+        VerificationChecks.check(!menu.getSlot(50).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Output is extraction-only");
+        menu.getSlot(41).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD, 17));
+        VerificationChecks.check(machine.inventory.get(9).getCount() == 17, "Input slot stores items in the real machine inventory");
+        var offer = menu.getOffers().get(0);
+        menu.getSlot(0).set(offer.getCostA().copy());
+        menu.getSlot(1).set(offer.getCostB().copy());
+        menu.slotsChanged(menu.getSlot(0).container);
+        VerificationChecks.check(Platform.sameStack(menu.getSlot(2).getItem(), offer.getResult()), "Paying both costs populates the real merchant result");
+        int xp = machine.getVillagerEntity().getVillagerXp();
+        menu.clicked(2, 0, net.minecraft.world.inventory.ClickType.PICKUP, player);
+        VerificationChecks.check(Platform.sameStack(menu.getCarried(), offer.getResult()), "Vanilla output click yields the purchased item");
+        VerificationChecks.check(menu.getSlot(0).getItem().isEmpty() && menu.getSlot(1).getItem().isEmpty(), "Vanilla output click consumes the exact payment");
+        VerificationChecks.check(machine.getVillagerEntity().getVillagerXp() == xp + offer.getXp(), "Vanilla result grants the villager its trading XP");
+        menu.setCarried(net.minecraft.world.item.ItemStack.EMPTY);
+        menu.removed(player);
     }
     static void persistence(MachineEntity machine) {
         var saved = machine.saveWithFullMetadata(machine.getLevel().registryAccess());

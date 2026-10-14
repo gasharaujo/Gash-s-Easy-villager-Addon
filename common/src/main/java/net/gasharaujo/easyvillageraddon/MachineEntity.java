@@ -23,14 +23,22 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     TradeCatalog catalog;
     private boolean dropped;
     private int cycleTicks;
+    java.util.UUID viewer;
     String status = "";
 
     public MachineEntity(BlockPos pos, BlockState state) { super(pos, state); }
     public MachineKind kind() { return ((MachineBlock) getBlockState().getBlock()).kind; }
 
-    public void open(Player player, String filter) {
+    public void open(Player player) {
+        if (viewer != null && !viewer.equals(player.getUUID()) && level instanceof net.minecraft.server.level.ServerLevel server) {
+            var other = server.getServer().getPlayerList().getPlayer(viewer);
+            if (other != null && other.containerMenu instanceof MachineMenu open && open.machine == this) {
+                if (player instanceof net.minecraft.server.level.ServerPlayer recipient) recipient.sendSystemMessage(Component.translatable("gui.gashs_easy_villager_addon.busy"), true);
+                return;
+            }
+        }
         if (player.containerMenu.getCarried().isEmpty()) {
-            player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new MachineMenu(id, inventory, this, filter),
+            player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new MachineMenu(id, inventory, this),
                     Component.literal(kind().title)));
         }
     }
@@ -47,7 +55,7 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             held.shrink(1);
             invalidateCatalog();
         } else {
-            open(player, lastSearch.getOrDefault(player.getUUID(), ""));
+            open(player);
         }
     }
 
@@ -75,20 +83,20 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
         if (v == null || v.isBaby() || v.isTrading()) return false;
         if (kind() == MachineKind.ADVANCED_TRADER) {
             if (Platform.villagerLevel(v) != 1 || v.getVillagerXp() != 0) {
-                status = "Selecao inicial exige villager nivel 1 sem XP";
+                status = "gui.gashs_easy_villager_addon.fresh_villager_required";
                 return false;
             }
             MerchantOffers offers = v.getOffers();
             if (offers.isEmpty()) offers.add(Platform.unlimited(choice, v));
             else offers.set(0, Platform.unlimited(choice, v));
             saveVillagerEntity();
-            status = "Troca inicial selecionada";
+            status = "gui.gashs_easy_villager_addon.status.initial_selected";
         } else {
             targetResult = choice.getResult().copy();
             targetCostA = choice.getBaseCostA().copy();
             targetCostB = choice.getCostB().copy();
             enabled = false;
-            status = "Alvo selecionado; clique para iniciar";
+            status = "gui.gashs_easy_villager_addon.status.target_selected";
         }
         setChanged();
         return true;
@@ -114,7 +122,7 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
         switch (kind()) {
             case DESNEURALIZER -> {
                 if (!Platform.unemployed(v) || v.getVillagerXp() != 0 || Platform.villagerLevel(v) != 1) resetProfession(false);
-                status = "Profissao removida";
+                status = "gui.gashs_easy_villager_addon.status.profession_removed";
             }
             case BRIBER -> bribe(v);
             case LEVELER -> { if (enabled) leveler(v); }
@@ -123,12 +131,12 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     }
 
     private void bribe(EasyVillagerEntity v) {
-        if (owner == null) { status = "Sem dono: recoloque o bloco"; return; }
+        if (owner == null) { status = "gui.gashs_easy_villager_addon.status.no_owner"; return; }
         int reputation = v.getGossips().getReputation(owner, type -> type == GossipType.MINOR_POSITIVE);
-        if (reputation >= GossipType.MINOR_POSITIVE.max) { bribeTicks = 0; status = "Reputacao positiva no limite (" + GossipType.MINOR_POSITIVE.max + ")"; return; }
+        if (reputation >= GossipType.MINOR_POSITIVE.max) { bribeTicks = 0; status = "gui.gashs_easy_villager_addon.status.reputation_limit"; return; }
         ItemStack emeralds = new ItemStack(Items.EMERALD, 32);
         List<ItemStack> transaction = inputCopy();
-        if (!consume(transaction, emeralds)) { bribeTicks = 0; status = "Aguardando 32 esmeraldas"; return; }
+        if (!consume(transaction, emeralds)) { bribeTicks = 0; status = "gui.gashs_easy_villager_addon.status.waiting_emeralds"; return; }
         bribeTicks += 20;
         if (bribeTicks >= 400) {
             commitInput(transaction);
@@ -143,20 +151,20 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             bribeTicks = 0;
             saveVillagerEntity();
         }
-        status = "Reputacao: " + reputation + " | " + (bribeTicks / 20) + "/20s";
+        status = "gui.gashs_easy_villager_addon.status.bribing";
         setChanged();
     }
 
     private void leveler(EasyVillagerEntity v) {
-        if (targetResult.isEmpty() || !hasWorkstation()) { status = "Selecione alvo e estacao de trabalho"; return; }
+        if (targetResult.isEmpty() || !hasWorkstation()) { status = "gui.gashs_easy_villager_addon.select_target_help"; return; }
         boolean found = v.getOffers().stream().anyMatch(this::matchesTarget);
         if (found && Platform.villagerLevel(v) >= targetLevel) {
-            enabled = false; status = "Troca encontrada!"; setChanged(); return;
+            enabled = false; status = "gui.gashs_easy_villager_addon.status.target_found"; setChanged(); return;
         }
         if (Platform.villagerLevel(v) >= targetLevel) {
             resetProfession(true);
             attempts++;
-            status = "Nova tentativa: " + attempts;
+            status = "gui.gashs_easy_villager_addon.status.retry";
             setChanged(); return;
         }
         for (MerchantOffer offer : v.getOffers()) {
@@ -171,10 +179,10 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             v.setVillagerXp(v.getVillagerXp() + offer.getXp());
             if (Platform.canLevelUp(v)) Platform.levelUp(v);
             saveVillagerEntity();
-            status = "Negociando; nivel " + Platform.villagerLevel(v) + " / " + targetLevel;
+            status = "gui.gashs_easy_villager_addon.status.trading";
             setChanged(); return;
         }
-        status = "Aguardando insumos, espaco ou reposicao";
+        status = "gui.gashs_easy_villager_addon.status.waiting_items";
     }
 
     private boolean matchesTarget(MerchantOffer offer) {
@@ -216,25 +224,6 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             }
         }
         return false;
-    }
-
-    void takeVillager(Player player) {
-        if (getVillagerEntity() != null && getVillagerEntity().isTrading()) return;
-        ItemStack carried = player.containerMenu.getCarried();
-        if (hasVillager() && carried.isEmpty()) player.containerMenu.setCarried(removeVillager());
-        else if (!hasVillager() && carried.getItem() instanceof VillagerItem) {
-            setVillager(carried.copyWithCount(1)); carried.shrink(1);
-        }
-        invalidateCatalog();
-    }
-
-    void workstation(Player player) {
-        ItemStack carried = player.containerMenu.getCarried();
-        if (hasWorkstation() && carried.isEmpty()) player.containerMenu.setCarried(new ItemStack(removeWorkstation()));
-        else if (!hasWorkstation() && carried.getItem() instanceof BlockItem item && isValidBlock(item.getBlock())) {
-            setWorkstation(item.getBlock()); carried.shrink(1);
-        }
-        invalidateCatalog();
     }
 
     public void dropContents() {

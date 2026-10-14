@@ -8,7 +8,7 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão de desenvolvimento `0.1.0-dev`, com quatro blocos:
+Versão de desenvolvimento `0.2.0-dev`, com quatro blocos e interface própria de negociação:
 
 - **Advanced Trader:** seleciona a primeira troca de um villager de nível 1 sem
   XP de negociação. Mostra somente ofertas de nível 1. Todas as trocas ficam
@@ -34,17 +34,30 @@ profissão até passar pelo Desneuralizer ou reinício do Leveler.
 Clique com o item de villager para inseri-lo. No Advanced Trader e no Leveler,
 clique com uma estação de trabalho para inseri-la. Outro clique abre a interface.
 
-A primeira linha contém villager, estação, pesquisa, páginas, nível alvo, ação
-principal, alvo e estado. A segunda recebe insumos, a terceira guarda produtos,
-e as três inferiores mostram ofertas. Clique numa oferta para selecioná-la.
-No Leveler, escolha o nível antes da oferta e use a alavanca para iniciar/pausar.
-No Advanced Trader, a alavanca abre a negociação normal do villager.
+A tela segue a negociação do Minecraft: ofertas à esquerda, pagamento e resultado
+à direita, barra de XP, slots de villager/profissão e inventário do jogador abaixo.
+Os slots de pagamento e resultado usam o contêiner de negociação vanilla,
+incluindo consumo dos itens, XP, estatísticas e descontos. Shift-clique funciona
+no inventário e no resultado. A seleção de uma oferta preenche o pagamento com
+itens do inventário, como na tela normal de negociação.
 
-A bússola abre o campo de busca usando a tela vanilla de renomeação. Digite e
-clique na bússola de resultado para aplicar, sem custo de itens ou XP. Também
-pode usar Esc e reabrir o bloco. A busca aceita nomes/IDs de itens e encantamentos;
-encantamentos vanilla incluem termos em português como `remendo` e `fortuna`.
-Acentos e maiúsculas são ignorados. As prévias são botões e não podem ser coletadas.
+Na aba **Trocas**, clique numa oferta e retire seu resultado para negociar.
+No Advanced Trader, a aba **Inicial** lista somente ofertas de nível 1; selecione
+a desejada e clique em **Definir troca inicial**. No Leveler, use **Alvo**, escolha
+o nível, selecione a oferta e clique em **Definir troca alvo**. O botão
+**Iniciar/Pausar** controla a automação. A aba **Estoque** mostra slots reais de
+entrada e saída; no Briber, mostra as esmeraldas e o progresso do pagamento.
+
+O campo de pesquisa fica na própria tela e filtra enquanto se digita. Inclui
+autocomplete de nomes de itens e encantamentos, com sugestões clicáveis,
+setas para navegar e **Tab/Enter** para completar. Acentos e maiúsculas são
+ignorados. Os nomes seguem o idioma do cliente; encantamentos vanilla também
+aceitam termos em português como `remendo` e `fortuna`. As prévias de ofertas
+são elementos da interface e não ocupam slots de inventário.
+
+![Busca com autocomplete no cliente Minecraft](docs/ui/autocomplete.png)
+
+![Estoque do Leveler com inventário real](docs/ui/inventory.png)
 
 O catálogo consulta as fábricas de trocas do pack no Forge 1.20.1 e NeoForge 1.21.1,
 incluindo rebalanceamento experimental quando habilitado. No 26.1.2, consulta
@@ -54,7 +67,7 @@ combinações por fábrica e 4096 entradas por catálogo. Geradores personalizad
 podem ter variantes adicionais além desse limite. Reconstrói o catálogo ao abrir
 o bloco ou alterar nível/estação, sem cache global de ofertas antigas.
 
-Retire villager/estação clicando no respectivo slot com o cursor vazio.
+Retire villager/estação pelo respectivo slot real da interface.
 Funis inserem insumos por cima/laterais e extraem produtos por baixo.
 Quebrar o bloco solta villager, estação e inventário; use picareta para receber
 também o bloco. O estado é salvo ao descarregar chunks ou fechar o mundo;
@@ -98,7 +111,7 @@ do Minecraft no diretório de execução gerado.
 ## Instalar
 
 Instale o loader adequado, Easy Villagers para a mesma versão do Minecraft
-e o JAR correspondente deste addon na pasta `mods`. A base é carregada
+e o JAR correspondente deste addon na pasta `mods`. O addon é necessário
 tanto no cliente quanto no servidor. Não instale JARs de versões diferentes
 do addon ao mesmo tempo.
 
@@ -111,8 +124,10 @@ o carregamento em jogo deve ser validado separadamente.
 ## Código compartilhado e testes
 
 `common` contém o comportamento e os modelos, que usam texturas vanilla.
-Cada versão adapta registro, persistência e APIs. O Gradle do 26.1.2 adapta
-dois nomes de API ao compilar o código comum.
+Cada versão adapta registro, persistência, rede e renderização. As telas usam
+widgets nativos, slots de negociação vanilla e pacotes próprios para estado
+e catálogo. O servidor valida a distância, o menu aberto e a revisão do catálogo
+antes de aceitar uma seleção.
 
 Com o JDK correspondente em `JAVA_HOME`, execute na raiz:
 
@@ -123,6 +138,10 @@ Com o JDK correspondente em `JAVA_HOME`, execute na raiz:
 O teste cria um servidor isolado em `build/verification-run`, limitado à rede
 local do computador e com aceitação da EULA para esse ambiente de teste.
 Verifica catálogo, encantamentos, seleção, estoque ilimitado, reputação,
-consumo, reinício/parada do Leveler, persistência e proteção das prévias.
+consumo, reinício/parada do Leveler, persistência, tipos de slots, pagamento,
+retirada do resultado e XP concedido pela negociação vanilla.
 Habilitado apenas com `-Pverification`; classes/mods de teste são excluídos do
-JAR normal. A apresentação visual da interface deve ser conferida no cliente.
+JAR normal. O perfil adicional `-PuiVerification` abre um mundo de teste em
+`build/ui-client/saves/GashUiTest`, exercita seleção, autocomplete e uma compra
+real pelo cliente e salva capturas em `build/ui-client/screenshots`. Esse mundo
+deve existir antes do teste; pode ser copiado do mundo do servidor de verificação.

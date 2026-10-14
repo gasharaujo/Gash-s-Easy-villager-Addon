@@ -57,13 +57,7 @@ tasks.withType(Jar).configureEach {
     reproducibleFileOrder = true
 }
 
-def adaptedCommon = tasks.register('adaptCommonSources', Sync) {
-    from('../common/src/main/java')
-    into(layout.buildDirectory.dir('generated/sources/common'))
-    filter { line -> line.replace('ClickType', 'ContainerInput')
-            .replace('@Override public void createResult()', '@Override protected void createResultInternal()') }
-}
-sourceSets.main.java.srcDir(adaptedCommon)
+sourceSets.main.java.srcDir('../common/src/main/java')
 sourceSets.main.resources.srcDir('../common/src/main/resources')
 
 // Opt-in integration harness, excluded from distributable builds.
@@ -84,3 +78,10 @@ displayName = "Addon isolated integration checks"
 }
 tasks.named('processResources').configure { inputs.property('verification', project.hasProperty('verification')) }
 tasks.named('jar').configure { exclude('**/Verification*.class') }
+
+if (project.hasProperty('uiVerification')) {
+    neoForge.runs.server.systemProperty 'addon.uiVerification', 'true'
+    neoForge.runs.client.systemProperty 'addon.uiVerification', 'true'
+    neoForge.runs.client.gameDirectory = project.file('build/ui-client')
+    neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'GashUiTest', '--username', 'GashUiTest', '--width', '1280', '--height', '720')
+}

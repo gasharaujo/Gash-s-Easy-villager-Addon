@@ -78,3 +78,10 @@ displayName = "Addon isolated integration checks"
 }
 tasks.named('processResources').configure { inputs.property('verification', project.hasProperty('verification')) }
 tasks.named('jar').configure { exclude('**/Verification*.class') }
+
+if (project.hasProperty('uiVerification')) {
+    neoForge.runs.server.systemProperty 'addon.uiVerification', 'true'
+    neoForge.runs.client.systemProperty 'addon.uiVerification', 'true'
+    neoForge.runs.client.gameDirectory = project.file('build/ui-client')
+    neoForge.runs.client.programArguments.addAll('--quickPlaySingleplayer', 'GashUiTest', '--username', 'GashUiTest', '--width', '1280', '--height', '720')
+}

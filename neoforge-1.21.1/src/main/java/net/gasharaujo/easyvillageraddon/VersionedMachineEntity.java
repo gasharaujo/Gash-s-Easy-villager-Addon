@@ -17,7 +17,6 @@ abstract class VersionedMachineEntity extends TraderTileentityBase {
     protected int bribeTicks;
     protected int attempts;
     protected boolean enabled;
-    protected final java.util.Map<UUID, String> lastSearch = new java.util.HashMap<>();
 
     VersionedMachineEntity(BlockPos pos, BlockState state) {
         super(AddonRegistry.MACHINE.get(), state, pos, state);

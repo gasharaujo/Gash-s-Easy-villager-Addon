@@ -16,8 +16,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-final class Platform {
-    static boolean sameStack(ItemStack a, ItemStack b) { return ItemStack.isSameItemSameComponents(a, b); }
+public final class Platform {
+    public static String profession(EasyVillagerEntity v) { return v.getVillagerData().profession().unwrapKey().map(key -> key.identifier().toString()).orElse("none"); }
+    public static boolean sameStack(ItemStack a, ItemStack b) { return ItemStack.isSameItemSameComponents(a, b); }
     static void name(ItemStack stack, String text) { stack.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal(text)); }
     static int villagerLevel(EasyVillagerEntity v) { return v.getVillagerData().level(); }
     static boolean unemployed(EasyVillagerEntity v) { return v.getVillagerData().profession().is(VillagerProfession.NONE); }
@@ -46,7 +47,8 @@ final class Platform {
         tag.putInt("maxUses", Integer.MAX_VALUE); tag.putInt("uses", 0);
         return MerchantOffer.CODEC.parse(ops, tag).getOrThrow();
     }
-    static String searchText(ItemStack stack) {
+    public static List<String> enchantmentLabels(ItemStack stack) { return EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet().stream().map(entry -> net.minecraft.world.item.enchantment.Enchantment.getFullname(entry.getKey(), entry.getIntValue()).getString()).toList(); }
+    public static String searchText(ItemStack stack) {
         if (stack.isEmpty()) return "";
         StringBuilder text = new StringBuilder(stack.getHoverName().getString()).append(' ').append(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         for (var entry : EnchantmentHelper.getEnchantmentsForCrafting(stack).entrySet()) {
