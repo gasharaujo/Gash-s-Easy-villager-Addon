@@ -7,7 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 abstract class VersionedScreen extends AbstractContainerScreen<MachineMenu> {
     VersionedScreen(MachineMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 384, 236);
+        super(menu, inventory, title, net.gasharaujo.easyvillageraddon.MachineLayout.width(menu.kind(), menu.clientPane), net.gasharaujo.easyvillageraddon.MachineLayout.height(menu.kind(), menu.clientPane));
 
     }
     protected abstract void drawBackground(UiCanvas canvas, int mouseX, int mouseY);
@@ -49,6 +49,14 @@ abstract class VersionedScreen extends AbstractContainerScreen<MachineMenu> {
     private final class Canvas implements UiCanvas {
         private final GuiGraphicsExtractor graphics;
         Canvas(GuiGraphicsExtractor graphics) { this.graphics = graphics; }
+        public void tradeArrow(int x, int y) { graphics.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, sprite("trade_arrow"), x, y, 10, 9); }
+        public void experienceBar(int x, int y, int progress) {
+            graphics.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, sprite("experience_bar_background"), x, y, 102, 5);
+            if (progress > 0) graphics.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, sprite("experience_bar_current"), 102, 5, 0, 0, x, y, progress, 5);
+        }
+        public void scroller(int x, int y, boolean enabled) { graphics.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, sprite(enabled ? "scroller" : "scroller_disabled"), x, y, 6, 27); }
+        private net.minecraft.resources.Identifier sprite(String name) { return net.minecraft.resources.Identifier.parse("minecraft:container/villager/" + name); }
+        public void texture(String location, int x, int y, int width, int height, int u, int v, int sourceWidth, int sourceHeight, int textureWidth, int textureHeight) { graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, net.minecraft.resources.Identifier.parse(location), x, y, (float) u, (float) v, width, height, sourceWidth, sourceHeight, textureWidth, textureHeight); }
         public void fill(int x, int y, int right, int bottom, int color) { graphics.fill(x, y, right, bottom, color); }
         public void text(net.minecraft.network.chat.Component value, int x, int y, int color) { graphics.text(font, value, x, y, color, false); }
         public void item(net.minecraft.world.item.ItemStack stack, int x, int y) {

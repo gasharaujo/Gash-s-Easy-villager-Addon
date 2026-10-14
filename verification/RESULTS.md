@@ -1,12 +1,12 @@
 # Verificação em 14/10/2026
 
-Versão: `0.2.0-dev`.
+Versão: `0.3.0-dev`.
 
 | Plataforma | Compilação final | Servidor com Easy Villagers |
 | --- | --- | --- |
-| Forge 1.20.1 / 47.4.10 | Passou | 163 verificações passaram |
-| NeoForge 1.21.1 / 21.1.248 | Passou | 163 verificações passaram |
-| NeoForge 26.1.2 / 26.1.2.98 | Passou | 163 verificações passaram |
+| Forge 1.20.1 / 47.4.10 | Passou | 203 verificações passaram |
+| NeoForge 1.21.1 / 21.1.248 | Passou | 203 verificações passaram |
+| NeoForge 26.1.2 / 26.1.2.98 | Passou | 203 verificações passaram |
 
 Easy Villagers: 1.1.39 no Forge; 1.1.47 nas versões NeoForge.
 
@@ -19,6 +19,14 @@ o alvo, salvamento/recarregamento de dono, reputação, ofertas, XP, inventário
 e alvo. Exercitam também o menu registrado, slots tipados de villager/entrada/saída,
 pagamento nos slots vanilla, retirada do resultado e XP exato da negociação.
 
+A seleção inicial é assíncrona e não altera a coleção de ofertas ao escolher o
+alvo. O teste compara um sorteio nativo com o sorteio do Advanced Trader usando
+a mesma sequência aleatória: preço, quantidade, XP, ordem e ofertas acompanhantes
+coincidem. No 26.1.2, a sequência é a do registro de trocas/loot nativo.
+O Desneuralizer é testado com fila de villagers, saída cheia sem consumir a
+entrada e transferência do villager processado à saída. Os menus dos três
+processadores rejeitam resultado de negociação manual e não oferecem trocas.
+
 ## Cliente gráfico
 
 As três versões foram abertas no cliente Minecraft em mundos isolados. O teste
@@ -29,9 +37,13 @@ autocomplete com Tab, seleção de Remendo como oferta inicial, preenchimento
 dos pagamentos, retirada real do livro pelo protocolo de inventário e XP do
 villager. As telas do Leveler e Briber também foram capturadas durante execução.
 
-As capturas foram inspecionadas visualmente. O autocomplete renderiza acima
-das ofertas, os labels estão em português e o layout compacto cabe em uma
-janela 720p com a escala padrão do Forge. Exemplos estão em `docs/ui`.
+As capturas foram inspecionadas visualmente em janela 720p com escala 3.
+Advanced Trader usa o fundo de negociação vanilla (villager2.png no Forge
+1.20.1; villager.png nas versões NeoForge), com busca inicial em janela separada.
+Desneuralizer usa o fundo de entrada/saída do Incubator. Briber e Leveler têm
+telas compactas próprias sem pagamentos/resultados de negociação manual.
+O autocomplete renderiza acima da lista e os labels estão em português.
+Exemplos estão em `docs/ui`.
 
 Os JARs finais foram inspecionados: autoria correta, dependências obrigatórias
 sem limites máximos, metadados expandidos e ausência de classes de teste ou

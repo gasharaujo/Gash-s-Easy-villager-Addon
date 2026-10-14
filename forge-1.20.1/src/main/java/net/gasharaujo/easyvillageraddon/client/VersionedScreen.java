@@ -8,7 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 abstract class VersionedScreen extends AbstractContainerScreen<MachineMenu> {
     VersionedScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 384; imageHeight = 236;
+        imageWidth = net.gasharaujo.easyvillageraddon.MachineLayout.width(menu.kind(), menu.clientPane); imageHeight = net.gasharaujo.easyvillageraddon.MachineLayout.height(menu.kind(), menu.clientPane);
     }
     protected abstract void drawBackground(UiCanvas canvas, int mouseX, int mouseY);
     protected abstract void drawForeground(UiCanvas canvas, int mouseX, int mouseY);
@@ -48,6 +48,16 @@ abstract class VersionedScreen extends AbstractContainerScreen<MachineMenu> {
     private final class Canvas implements UiCanvas {
         private final GuiGraphics graphics;
         Canvas(GuiGraphics graphics) { this.graphics = graphics; }
+        public void tradeArrow(int x, int y) { texture(VanillaUi.TRADER, x, y, 10, 9, 15, 171, 10, 9, 512, 256); }
+        public void experienceBar(int x, int y, int progress) {
+            texture(VanillaUi.TRADER, x, y, 102, 5, 0, 186, 102, 5, 512, 256);
+            texture(VanillaUi.TRADER, x, y, progress + 1, 5, 0, 191, progress + 1, 5, 512, 256);
+        }
+        public void scroller(int x, int y, boolean enabled) { texture(VanillaUi.TRADER, x, y, 6, 27, enabled ? 0 : 6, 199, 6, 27, 512, 256); }
+        public void texture(String location, int x, int y, int width, int height, int u, int v, int sourceWidth, int sourceHeight, int textureWidth, int textureHeight) {
+            if (location.equals(VanillaUi.TRADER)) location = "minecraft:textures/gui/container/villager2.png";
+            graphics.blit(new net.minecraft.resources.ResourceLocation(location), x, y, width, height, (float) u, (float) v, sourceWidth, sourceHeight, textureWidth, textureHeight);
+        }
         public void fill(int x, int y, int right, int bottom, int color) { graphics.fill(x, y, right, bottom, color); }
         public void text(net.minecraft.network.chat.Component value, int x, int y, int color) { graphics.drawString(font, value, x, y, color, false); }
         public void item(net.minecraft.world.item.ItemStack stack, int x, int y) {

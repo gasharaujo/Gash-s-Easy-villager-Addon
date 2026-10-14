@@ -8,6 +8,14 @@ public final class VerificationMod {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) -> VerificationScene.commands(event.getDispatcher()));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> { if (!Boolean.getBoolean("addon.uiVerification")) VerificationChecks.run(event.getServer()); });
     }
+    static void seedTrades(de.maxhenkel.easyvillagers.entity.EasyVillagerEntity v, long seed) {
+        v.getRandom().setSeed(seed);
+        var server = (net.minecraft.server.level.ServerLevel) v.level();
+        server.getRandom().setSeed(seed);
+        var key = v.getVillagerData().profession().value().getTrades(1);
+        var set = server.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.TRADE_SET).getOptional(key).orElseThrow();
+        set.randomSequence().ifPresent(id -> server.getServer().getRandomSequence(id).setSeed(seed));
+    }
     static void menuChecks(MachineEntity machine) {
         var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft((net.minecraft.server.level.ServerLevel) machine.getLevel());
         player.setPos(machine.getBlockPos().getX()+0.5, machine.getBlockPos().getY()+0.5, machine.getBlockPos().getZ()+0.5);
@@ -17,11 +25,12 @@ public final class VerificationMod {
         VerificationChecks.check(menu.getType() == AddonRegistry.MENU.get(), "Dedicated addon menu type is registered");
         VerificationChecks.check(menu.slots.size() == 59, "Catalog previews never become inventory slots");
         VerificationChecks.check(menu.getSlot(2) instanceof net.minecraft.world.inventory.MerchantResultSlot, "Result uses the vanilla merchant transaction slot");
+        VerificationChecks.check(!menu.getSlot(39).isActive(), "Identity controls are outside the clean trading view");
+        menu.setPane(2);
         VerificationChecks.check(menu.getSlot(39).mayPlace(new net.minecraft.world.item.ItemStack(de.maxhenkel.easyvillagers.items.ModItems.VILLAGER.get())), "Villager slot accepts a real Easy Villagers item");
         VerificationChecks.check(!menu.getSlot(39).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Villager slot rejects unrelated items");
+        menu.setPane(0);
         VerificationChecks.check(!menu.getSlot(50).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Output is extraction-only");
-        menu.getSlot(41).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD, 17));
-        VerificationChecks.check(machine.inventory.get(9).getCount() == 17, "Input slot stores items in the real machine inventory");
         var offer = menu.getOffers().get(0);
         menu.getSlot(0).set(offer.getCostA().copy());
         menu.getSlot(1).set(offer.getCostB().copy());
@@ -33,6 +42,27 @@ public final class VerificationMod {
         VerificationChecks.check(menu.getSlot(0).getItem().isEmpty() && menu.getSlot(1).getItem().isEmpty(), "Vanilla output click consumes the exact payment");
         VerificationChecks.check(machine.getVillagerEntity().getVillagerXp() == xp + offer.getXp(), "Vanilla result grants the villager its trading XP");
         menu.setCarried(net.minecraft.world.item.ItemStack.EMPTY);
+        menu.removed(player);
+    }
+    static void processorMenuChecks(MachineEntity machine) {
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft((net.minecraft.server.level.ServerLevel) machine.getLevel());
+        player.setPos(machine.getBlockPos().getX()+0.5, machine.getBlockPos().getY()+0.5, machine.getBlockPos().getZ()+0.5);
+        var menu = new MachineMenu(2, player.getInventory(), machine);
+        player.containerMenu = menu;
+        VerificationChecks.check(!menu.manualTrading() && menu.getOffers().isEmpty(), "Processor has no manual trades: " + machine.kind());
+        for (int i = 0; i < 3; i++) VerificationChecks.check(!menu.getSlot(i).isActive(), "Processor hides merchant slot " + i);
+        VerificationChecks.check(!menu.getSlot(2).mayPickup(player), "Processor rejects crafted merchant output clicks");
+        if (machine.kind() == MachineKind.DESNEURALIZER) {
+            VerificationChecks.check(menu.getSlot(41).mayPlace(new net.minecraft.world.item.ItemStack(de.maxhenkel.easyvillagers.items.ModItems.VILLAGER.get())), "Queue input accepts villagers");
+            VerificationChecks.check(!menu.getSlot(41).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Queue input rejects emeralds");
+            VerificationChecks.check(java.util.stream.IntStream.range(41,50).filter(i -> menu.getSlot(i).isActive()).count() == 4, "Incubator-style four input slots");
+            VerificationChecks.check(java.util.stream.IntStream.range(50,59).filter(i -> menu.getSlot(i).isActive()).count() == 4, "Incubator-style four output slots");
+        } else {
+            menu.getSlot(41).set(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD, 17));
+            VerificationChecks.check(machine.inventory.get(9).getCount() == 17, "Processor material slots use real machine inventory");
+            if (machine.kind() == MachineKind.BRIBER) VerificationChecks.check(!menu.getSlot(41).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)), "Briber rejects non-emeralds");
+        }
+        VerificationChecks.check(!menu.getSlot(50).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.EMERALD)), "Processor output is extraction-only");
         menu.removed(player);
     }
     static void persistence(MachineEntity machine) {

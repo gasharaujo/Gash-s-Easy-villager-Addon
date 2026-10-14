@@ -10,7 +10,7 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 public final class UiNetwork {
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
-            new ResourceLocation(EasyVillagerAddon.MOD_ID, "ui"), () -> "2", "2"::equals, "2"::equals);
+            new ResourceLocation(EasyVillagerAddon.MOD_ID, "ui"), () -> "3", "3"::equals, "3"::equals);
     public static void register(IEventBus bus) {
         CHANNEL.messageBuilder(UiSnapshot.class, 0, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(UiSnapshot::write).decoder(UiSnapshot::read)

@@ -32,7 +32,12 @@ public final class VerificationScene {
         MachineEntity machine = (MachineEntity) world.getBlockEntity(pos);
         machine.owner = player.getUUID();
         machine.setVillager(new ItemStack(ModItems.VILLAGER.get()));
-        machine.setWorkstation(Blocks.LECTERN);
+        if (kind != MachineKind.BRIBER) machine.setWorkstation(Blocks.LECTERN);
+        if (kind == MachineKind.DESNEURALIZER) {
+            machine.getVillagerEntity().setVillagerXp(100);
+            var queued = machine.removeVillager();
+            for (int i = 9; i < 13; i++) machine.inventory.set(i, queued.copy());
+        }
         if (kind == MachineKind.BRIBER) { machine.inventory.set(9, new ItemStack(Items.EMERALD, 64)); machine.bribeTicks = 120; }
         if (kind == MachineKind.LEVELER) {
             machine.targetLevel = 3;

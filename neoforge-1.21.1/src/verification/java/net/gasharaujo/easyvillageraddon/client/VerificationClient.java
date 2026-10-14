@@ -13,13 +13,13 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 /** Exercises the real client connection and captures the actual rendered screens. */
 public final class VerificationClient {
     private static int stage, delay, age;
-    private static boolean configured, completedSearch;
+    private static boolean configured, completedSearch, searchStarted;
     public static void install() { NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> tick()); }
     private static void tick() {
-        Minecraft mc = Minecraft.getInstance();
+        Minecraft mc = Minecraft.getInstance(); mc.getToasts().clear();
         if (++age > 6000) { System.err.println("ADDON_CLIENT_UI_FAILED timeout stage=" + stage); mc.stop(); return; }
         if (!configured && mc.options != null) {
-            configured = true; mc.options.pauseOnLostFocus = false; mc.options.guiScale().set(2); mc.options.languageCode = "pt_br";
+            configured = true; mc.options.pauseOnLostFocus = false; mc.options.guiScale().set(3); mc.options.languageCode = "pt_br";
             mc.getLanguageManager().setSelected("pt_br"); mc.reloadResourcePacks();
         }
         if (stage >= 13) { if (delay > 0) delay--; else mc.stop(); return; }
@@ -30,15 +30,15 @@ public final class VerificationClient {
             if (stage == 0) { command(mc, "advanced_trader"); stage++; delay = 70; return; }
             if (!(mc.screen instanceof MachineScreen screen)) return;
             var menu = screen.getMenu();
-            if (!menu.state.hasVillager) return;
+            if (!menu.state.hasVillager && menu.kind() != MachineKind.DESNEURALIZER) return;
             switch (stage) {
                 case 1 -> {
                     capture(mc, "01-advanced-trader.png"); screen.pane(1);
-                    screen.searchBox().setValue("Re"); screen.searchBox().setFocused(true); screen.setFocused(screen.searchBox());
                     stage++; delay = 60;
                 }
                 case 2 -> {
                     if (!menu.state.catalogComplete) { delay = 20; return; }
+                    if (!searchStarted) { screen.searchBox().setValue("Re"); screen.searchBox().setFocused(true); screen.setFocused(screen.searchBox()); searchStarted = true; delay = 20; return; }
                     if (!completedSearch) {
                         capture(mc, "02-autocomplete.png");
                         screen.screenKey(org.lwjgl.glfw.GLFW.GLFW_KEY_TAB, 0);
@@ -51,8 +51,8 @@ public final class VerificationClient {
                     screen.searchBox().setValue(""); screen.pane(0); stage++; delay = 30;
                 }
                 case 3 -> {
-                    if (menu.getOffers().isEmpty() || !Platform.searchText(menu.getOffers().get(0).getResult()).contains("mending")) { delay = 10; return; }
-                    UiNetwork.action(new UiAction(menu.containerId, UiAction.TRADE, 0, menu.state.revision)); stage++; delay = 25;
+                    if (menu.state.enabled || menu.getOffers().stream().noneMatch(o -> Platform.searchText(o.getResult()).contains("mending"))) { delay = 10; return; }
+                    UiNetwork.action(new UiAction(menu.containerId, UiAction.TRADE, java.util.stream.IntStream.range(0, menu.getOffers().size()).filter(i -> Platform.searchText(menu.getOffers().get(i).getResult()).contains("mending")).findFirst().orElseThrow(), menu.state.revision)); stage++; delay = 25;
                 }
                 case 4 -> {
                     if (!menu.getSlot(2).hasItem()) throw new AssertionError("Real merchant result is empty after payment");
@@ -69,14 +69,14 @@ public final class VerificationClient {
                 }
                 case 6 -> {
                     if (menu.kind() != MachineKind.LEVELER) return;
-                    screen.pane(2); stage++; delay = 20;
+                    if (menu.getSlot(2).isActive()) throw new AssertionError("Processor unexpectedly has merchant result"); stage++; delay = 20;
                 }
                 case 7 -> {
                     capture(mc, "04-leveler-real-inventory.png");
                     UiNetwork.action(new UiAction(menu.containerId, UiAction.TOGGLE, 0, menu.state.revision)); stage++; delay = 50;
                 }
                 case 8 -> { capture(mc, "05-leveler-running.png"); command(mc, "briber"); stage++; delay = 40; }
-                case 9 -> { if (menu.kind() != MachineKind.BRIBER) return; screen.pane(2); stage++; delay = 20; }
+                case 9 -> { if (menu.kind() != MachineKind.BRIBER) return; if (menu.getSlot(2).isActive()) throw new AssertionError("Processor unexpectedly has merchant result"); stage++; delay = 20; }
                 case 10 -> { capture(mc, "06-briber.png"); command(mc, "desneuralizer"); stage++; delay = 35; }
                 case 11 -> { if (menu.kind() != MachineKind.DESNEURALIZER) return; capture(mc, "07-desneuralizer.png"); stage++; delay = 40; }
                 case 12 -> { System.out.println("ADDON_CLIENT_UI_PASSED"); command(mc, "stop"); stage++; delay = 25; }

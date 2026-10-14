@@ -28,6 +28,9 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
 
     public MachineEntity(BlockPos pos, BlockState state) { super(pos, state); }
     public MachineKind kind() { return ((MachineBlock) getBlockState().getBlock()).kind; }
+    @Override protected void onAddVillager(EasyVillagerEntity villager) {
+        if (kind() == MachineKind.ADVANCED_TRADER || kind() == MachineKind.LEVELER) super.onAddVillager(villager);
+    }
 
     public void open(Player player) {
         if (viewer != null && !viewer.equals(player.getUUID()) && level instanceof net.minecraft.server.level.ServerLevel server) {
@@ -45,7 +48,12 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
 
     public void interact(Player player, ItemStack held) {
         if (level.isClientSide()) return;
-        if (!hasVillager() && held.getItem() instanceof VillagerItem) {
+        if (kind() == MachineKind.DESNEURALIZER && held.getItem() instanceof VillagerItem) {
+            for (int i = 9; i < 13; i++) if (inventory.get(i).isEmpty()) {
+                inventory.set(i, held.copyWithCount(1)); held.shrink(1); setChanged(); return;
+            }
+            open(player);
+        } else if (!hasVillager() && held.getItem() instanceof VillagerItem) {
             setVillager(held.copyWithCount(1));
             held.shrink(1);
             invalidateCatalog();
@@ -65,6 +73,7 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     }
 
     void rebuildCatalog() {
+        if (kind() != MachineKind.ADVANCED_TRADER && kind() != MachineKind.LEVELER) { catalog = null; return; }
         EasyVillagerEntity v = getVillagerEntity();
         catalog = v == null || v.isBaby() ? null : new TradeCatalog(v, kind() == MachineKind.ADVANCED_TRADER ? 1 : targetLevel);
     }
@@ -86,11 +95,12 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
                 status = "gui.gashs_easy_villager_addon.fresh_villager_required";
                 return false;
             }
-            MerchantOffers offers = v.getOffers();
-            if (offers.isEmpty()) offers.add(Platform.unlimited(choice, v));
-            else offers.set(0, Platform.unlimited(choice, v));
-            saveVillagerEntity();
-            status = "gui.gashs_easy_villager_addon.status.initial_selected";
+            // Select a goal, never insert an offer from the preview catalog. Each
+            // attempt below regenerates the villager's entire natural offer set.
+            targetResult = choice.getResult().copy();
+            targetCostA = choice.getBaseCostA().copy(); targetCostB = choice.getCostB().copy();
+            attempts = 0; enabled = true;
+            status = "gui.gashs_easy_villager_addon.status.rerolling";
         } else {
             targetResult = choice.getResult().copy();
             targetCostA = choice.getBaseCostA().copy();
@@ -103,9 +113,11 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     }
 
     @Override public void tickServer() {
+        if (kind() == MachineKind.DESNEURALIZER) { desneuralizeQueue(); return; }
         if (catalog != null && !catalog.complete()) catalog.step();
         EasyVillagerEntity v = getVillagerEntity();
         if (v == null) return;
+        if (kind() == MachineKind.ADVANCED_TRADER && !v.isBaby() && enabled) rerollInitial(v);
         if (kind() == MachineKind.ADVANCED_TRADER || kind() == MachineKind.LEVELER) super.tickServer();
         else if (v.isBaby()) { advanceAge(); setChanged(); }
         if (kind() == MachineKind.ADVANCED_TRADER && !v.isBaby()) {
@@ -120,14 +132,45 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
         if (++cycleTicks < 20) return;
         cycleTicks = 0;
         switch (kind()) {
-            case DESNEURALIZER -> {
-                if (!Platform.unemployed(v) || v.getVillagerXp() != 0 || Platform.villagerLevel(v) != 1) resetProfession(false);
-                status = "gui.gashs_easy_villager_addon.status.profession_removed";
-            }
             case BRIBER -> bribe(v);
             case LEVELER -> { if (enabled) leveler(v); }
             default -> { }
         }
+    }
+
+    private void rerollInitial(EasyVillagerEntity v) {
+        if (v.getVillagerXp() != 0 || Platform.villagerLevel(v) != 1 || targetResult.isEmpty()) { enabled = false; return; }
+        // A bounded amount of work per tick, even for very rare custom trades.
+        for (int budget = 0; budget < 32; budget++) {
+            if (v.getOffers().stream().anyMatch(this::matchesTarget)) {
+                enabled = false; status = "gui.gashs_easy_villager_addon.status.initial_selected";
+                saveVillagerEntity(); setChanged(); return;
+            }
+            v.setOffers(null);
+            v.recalculateOffers();
+            attempts++;
+        }
+        setChanged();
+    }
+
+    private void desneuralizeQueue() {
+        int output = -1;
+        for (int i = 18; i < 22; i++) if (inventory.get(i).isEmpty()) { output = i; break; }
+        if (output < 0) { status = "gui.gashs_easy_villager_addon.status.output_full"; return; }
+        if (!hasVillager()) {
+            for (int i = 9; i < 13; i++) if (inventory.get(i).getItem() instanceof VillagerItem) {
+                setVillager(inventory.get(i).split(1)); cycleTicks = 0; setChanged(); break;
+            }
+        }
+        if (!hasVillager()) return;
+        if (++cycleTicks < 20) return;
+        var v = getVillagerEntity();
+        if (v == null) return;
+        Platform.clearProfession(v);
+        saveVillagerEntity();
+        inventory.set(output, removeVillager());
+        cycleTicks = 0; status = "gui.gashs_easy_villager_addon.status.profession_removed";
+        setChanged();
     }
 
     private void bribe(EasyVillagerEntity v) {
@@ -261,11 +304,15 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     @Override public boolean stillValid(Player player) { return accessible(player); }
     @Override public void clearContent() { inventory.clear(); setChanged(); }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+        if (kind() == MachineKind.DESNEURALIZER) return slot >= 9 && slot < 13 && stack.getItem() instanceof VillagerItem;
+        if (kind() == MachineKind.ADVANCED_TRADER) return false;
         return slot >= 9 && slot < 18 && (kind() != MachineKind.BRIBER || stack.is(Items.EMERALD));
     }
     @Override public int[] getSlotsForFace(net.minecraft.core.Direction face) {
-        return java.util.stream.IntStream.range(face == net.minecraft.core.Direction.DOWN ? 18 : 9,
-                face == net.minecraft.core.Direction.DOWN ? 27 : 18).toArray();
+        if (kind() == MachineKind.ADVANCED_TRADER) return new int[0];
+        boolean output = face == net.minecraft.core.Direction.DOWN;
+        int start = output ? 18 : 9;
+        return java.util.stream.IntStream.range(start, start + (kind() == MachineKind.DESNEURALIZER ? 4 : 9)).toArray();
     }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction face) { return canPlaceItem(slot, stack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, net.minecraft.core.Direction face) { return slot >= 18 && slot < 27; }

@@ -25,6 +25,7 @@ public final class VerificationChecks {
             briber();
             leveler();
             VerificationMod.menuChecks(machine(MachineKind.ADVANCED_TRADER));
+            for (var kind : MachineKind.values()) if (kind != MachineKind.ADVANCED_TRADER) VerificationMod.processorMenuChecks(machine(kind));
             System.out.println("ADDON_VERIFICATION_PASSED assertions=" + assertions);
         } catch (Throwable failure) {
             System.err.println("ADDON_VERIFICATION_FAILED");
@@ -62,9 +63,31 @@ public final class VerificationChecks {
         var mending = machine.catalog.offers.stream().filter(offer -> Platform.searchText(offer.getResult()).contains("mending")).findFirst();
         check(mending.isPresent(), "Tradeable mending enchantment is in novice catalog");
         check(Platform.searchText(mending.orElseThrow().getResult()).contains("remendo"), "Portuguese enchantment search alias");
+        var before = machine.getVillagerEntity().getOffers();
         check(machine.select(mending.orElseThrow()), "Initial offer can be selected");
-        check(machine.getVillagerEntity().getOffers().get(0).getMaxUses() == Integer.MAX_VALUE, "Selected offer does not exhaust");
-        var offer = machine.getVillagerEntity().getOffers().get(0);
+        check(machine.getVillagerEntity().getOffers() == before, "Selection does not inject or overwrite an offer");
+        for (int i = 0; i < 10000 && machine.enabled; i++) ticks(machine, 1);
+        check(!machine.enabled, "Natural reroll finds the selected enchantment");
+        check(machine.getVillagerEntity().getOffers().stream().anyMatch(o -> TradeCatalog.sameTrade(o, mending.orElseThrow())), "Naturally rolled set contains target at any index");
+        check(machine.getVillagerEntity().getOffers().size() == 2, "Whole novice trade set is retained");
+        var v = machine.getVillagerEntity();
+        v.setOffers(null); VerificationMod.seedTrades(v, 143573L);
+        var expected = v.getOffers();
+        var goal = expected.get(expected.size() - 1);
+        v.setOffers(new net.minecraft.world.item.trading.MerchantOffers()); VerificationMod.seedTrades(v, 143573L);
+        check(machine.select(goal), "Natural bundle can be selected");
+        ticks(machine, 1);
+        check(!machine.enabled && machine.attempts == 1, "Identical vanilla random seed finds target on first natural roll");
+        var actual = v.getOffers();
+        check(actual.size() == expected.size(), "Native random roll keeps the entire original bundle");
+        for (int i = 0; i < expected.size(); i++) {
+            var a = actual.get(i); var e = expected.get(i);
+            check(TradeCatalog.sameTrade(a, e) && a.getBaseCostA().getCount() == e.getBaseCostA().getCount()
+                    && a.getCostB().getCount() == e.getCostB().getCount() && a.getResult().getCount() == e.getResult().getCount()
+                    && a.getXp() == e.getXp(), "Natural prices, XP, order and companion trades are unchanged");
+        }
+        var offer = actual.get(0);
+        check(offer.getMaxUses() == Integer.MAX_VALUE, "Rolled offer does not exhaust");
         offer.increaseUses();
         ticks(machine, 1);
         check(offer.getUses() == 0, "Advanced Trader resets uses");
@@ -79,7 +102,17 @@ public final class VerificationChecks {
         Platform.assignProfession(machine.getVillagerEntity(), machine.getWorkstationProfession());
         machine.getVillagerEntity().setVillagerXp(250);
         machine.getVillagerEntity().getGossips().add(machine.owner, GossipType.MINOR_POSITIVE, 10);
+        var input = machine.removeVillager();
+        machine.inventory.set(9, input);
+        check(machine.canPlaceItem(9, input) && !machine.canPlaceItem(9, new ItemStack(Items.EMERALD)), "Desneuralizer accepts only villagers in its input");
+        for (int i = 18; i < 22; i++) machine.inventory.set(i, input.copy());
+        ticks(machine, 40);
+        check(!machine.inventory.get(9).isEmpty() && !machine.hasVillager(), "Full villager output leaves queued input untouched");
+        for (int i = 18; i < 22; i++) machine.inventory.set(i, ItemStack.EMPTY);
         ticks(machine, 20);
+        check(machine.inventory.get(9).isEmpty() && !machine.hasVillager() && !machine.inventory.get(18).isEmpty(), "Desneuralizer transfers input villager to real output");
+        var processed = machine.inventory.get(18);
+        machine.setVillager(processed.copy());
         check(Platform.unemployed(machine.getVillagerEntity()), "Desneuralizer removes profession");
         check(machine.getVillagerEntity().getVillagerXp() == 0 && Platform.villagerLevel(machine.getVillagerEntity()) == 1, "Desneuralizer resets XP and level");
         check(machine.getVillagerEntity().getGossips().getReputation(machine.owner, t -> t == GossipType.MINOR_POSITIVE) == 10, "Desneuralizer preserves gossip");

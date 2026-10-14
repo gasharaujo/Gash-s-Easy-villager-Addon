@@ -1,3 +1,14 @@
+# 0.3.0-dev
+
+- Advanced Trader sorteia conjuntos completos de ofertas pelo caminho nativo do
+  villager até encontrar o alvo. Mantém preço, ordem e ofertas acompanhantes.
+- Negociação com fundo vanilla e poucos controles; busca inicial em janela separada.
+- Desneuralizer com fila de quatro entradas e quatro saídas, igual ao Incubator.
+- Briber compacto, somente villager, esmeraldas e progresso.
+- Leveler com inventários de insumos/produtos, seleção do alvo e Iniciar/Pausar.
+- Compras manuais desabilitadas nos três processadores, também no servidor.
+- Fundos e elementos gráficos reutilizam recursos vanilla e do Easy Villagers.
+
 # 0.2.0-dev
 
 - Tela própria seguindo a negociação de villagers do Minecraft, com ofertas,

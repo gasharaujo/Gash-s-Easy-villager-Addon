@@ -17,11 +17,13 @@ final class MachineMerchant implements Merchant {
     @Override public Player getTradingPlayer() { return player; }
     @Override public void setTradingPlayer(Player player) { }
     @Override public MerchantOffers getOffers() {
+        if (machine.kind() != MachineKind.ADVANCED_TRADER) return empty;
         var villager = machine.getVillagerEntity();
         return villager == null || villager.isBaby() ? empty : villager.getOffers();
     }
     @Override public void overrideOffers(MerchantOffers offers) { }
     @Override public void notifyTrade(MerchantOffer offer) {
+        if (machine.kind() != MachineKind.ADVANCED_TRADER || machine.enabled) return;
         var villager = machine.getVillagerEntity();
         if (villager == null) return;
         villager.setTradingPlayer(player);

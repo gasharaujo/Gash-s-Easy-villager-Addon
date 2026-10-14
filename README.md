@@ -8,13 +8,17 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão de desenvolvimento `0.2.0-dev`, com quatro blocos e interface própria de negociação:
+Versão de desenvolvimento `0.3.0-dev`, com quatro blocos e telas específicas:
 
-- **Advanced Trader:** seleciona a primeira troca de um villager de nível 1 sem
-  XP de negociação. Mostra somente ofertas de nível 1. Todas as trocas ficam
+- **Advanced Trader:** escolhe uma troca de um villager de nível 1 sem XP e repete
+  o sorteio normal do Minecraft até encontrá-la. Preserva o conjunto completo
+  daquela tentativa, com preço aleatório, ordem e trocas acompanhantes naturais;
+  não injeta a prévia do catálogo no villager. Mostra somente alvos de nível 1.
+  Todas as trocas ficam
   disponíveis sem esgotamento enquanto o villager estiver neste bloco.
-- **Desneuralizer:** remove automaticamente profissão, nível, XP e ofertas,
-  preservando identidade, tipo de bioma, inventário e reputação.
+- **Desneuralizer:** recebe villagers em quatro slots de entrada e entrega-os
+  em quatro slots de saída, como o Incubator. Remove profissão, nível, XP e
+  ofertas, preservando identidade, idade, bioma, inventário e reputação.
 - **Briber:** consome 32 esmeraldas por 400 ticks (20 segundos a 20 TPS) e dá
   exatamente +1 de reputação positiva ao jogador que colocou o bloco. Pausa
   sem esmeraldas e deixa de cobrar no limite vanilla dessa reputação (200 no
@@ -33,31 +37,39 @@ profissão até passar pelo Desneuralizer ou reinício do Leveler.
 
 Clique com o item de villager para inseri-lo. No Advanced Trader e no Leveler,
 clique com uma estação de trabalho para inseri-la. Outro clique abre a interface.
+No Desneuralizer, o villager entra na fila de processamento.
 
-A tela segue a negociação do Minecraft: ofertas à esquerda, pagamento e resultado
-à direita, barra de XP, slots de villager/profissão e inventário do jogador abaixo.
+O **Advanced Trader** usa o fundo da negociação vanilla: ofertas à esquerda,
+pagamento e resultado à direita, barra de XP e inventário abaixo. O pequeno botão
+de ciclo abre a seleção inicial; o botão `…` abre os slots de villager e profissão.
 Os slots de pagamento e resultado usam o contêiner de negociação vanilla,
 incluindo consumo dos itens, XP, estatísticas e descontos. Shift-clique funciona
 no inventário e no resultado. A seleção de uma oferta preenche o pagamento com
 itens do inventário, como na tela normal de negociação.
 
-Na aba **Trocas**, clique numa oferta e retire seu resultado para negociar.
-No Advanced Trader, a aba **Inicial** lista somente ofertas de nível 1; selecione
-a desejada e clique em **Definir troca inicial**. No Leveler, use **Alvo**, escolha
-o nível, selecione a oferta e clique em **Definir troca alvo**. O botão
-**Iniciar/Pausar** controla a automação. A aba **Estoque** mostra slots reais de
-entrada e saída; no Briber, mostra as esmeraldas e o progresso do pagamento.
+O **Desneuralizer** usa o mesmo fundo de entrada/saída do Incubator, sem botões
+de negociação. O **Briber** mostra somente villager, esmeraldas e progresso;
+o tooltip do progresso informa custo, reputação e tempo. O **Leveler** mostra
+villager, profissão, alvo, nove slots de insumos e nove de produtos. O botão
+**Escolher alvo** abre a seleção; **Iniciar/Pausar** controla a automação.
+Esses três blocos não permitem compras manuais, inclusive pelo protocolo de rede.
 
-O campo de pesquisa fica na própria tela e filtra enquanto se digita. Inclui
+Na janela de seleção do Advanced Trader/Leveler, o campo filtra enquanto se digita. Inclui
 autocomplete de nomes de itens e encantamentos, com sugestões clicáveis,
 setas para navegar e **Tab/Enter** para completar. Acentos e maiúsculas são
 ignorados. Os nomes seguem o idioma do cliente; encantamentos vanilla também
 aceitam termos em português como `remendo` e `fortuna`. As prévias de ofertas
 são elementos da interface e não ocupam slots de inventário.
 
-![Busca com autocomplete no cliente Minecraft](docs/ui/autocomplete.png)
+![Negociação do Advanced Trader](docs/ui/advanced-trader.png)
+
+![Busca com autocomplete na seleção](docs/ui/autocomplete.png)
 
 ![Estoque do Leveler com inventário real](docs/ui/inventory.png)
+
+![Desneuralizer com entrada e saída de villagers](docs/ui/desneuralizer.png)
+
+![Briber com esmeraldas e progresso](docs/ui/briber.png)
 
 O catálogo consulta as fábricas de trocas do pack no Forge 1.20.1 e NeoForge 1.21.1,
 incluindo rebalanceamento experimental quando habilitado. No 26.1.2, consulta
@@ -67,7 +79,8 @@ combinações por fábrica e 4096 entradas por catálogo. Geradores personalizad
 podem ter variantes adicionais além desse limite. Reconstrói o catálogo ao abrir
 o bloco ou alterar nível/estação, sem cache global de ofertas antigas.
 
-Retire villager/estação pelo respectivo slot real da interface.
+Retire villager/estação pelo respectivo slot real da interface; no Advanced Trader,
+abra `…`. No Desneuralizer, retire os villagers processados da saída.
 Funis inserem insumos por cima/laterais e extraem produtos por baixo.
 Quebrar o bloco solta villager, estação e inventário; use picareta para receber
 também o bloco. O estado é salvo ao descarregar chunks ou fechar o mundo;
