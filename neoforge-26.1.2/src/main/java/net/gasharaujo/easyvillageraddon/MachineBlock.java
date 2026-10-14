@@ -36,5 +36,5 @@ public final class MachineBlock extends Block implements EntityBlock {
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof MachineEntity machine) machine.interact(player, stack);
         return InteractionResult.SUCCESS;
     }
-    
+
 }
