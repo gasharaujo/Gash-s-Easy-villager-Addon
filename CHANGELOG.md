@@ -1,3 +1,8 @@
+# 1.0.1
+
+- Corrige o visual do Briber para usar o Incubator com piso de esmeralda e
+  villager centralizado, tanto no mundo quanto no inventário.
+
 # 1.0.0
 
 - Receitas definitivas com painéis de vidro, blocos do Easy Villagers e os

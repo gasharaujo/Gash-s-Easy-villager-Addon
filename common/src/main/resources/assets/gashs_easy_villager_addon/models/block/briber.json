@@ -1,5 +1,5 @@
 {
-  "parent": "easy_villagers:block/auto_trader",
+  "parent": "easy_villagers:block/incubator",
   "textures": {
     "back": "minecraft:block/emerald_block",
     "front": "minecraft:block/emerald_block"

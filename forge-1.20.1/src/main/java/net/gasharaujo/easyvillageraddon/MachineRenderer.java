@@ -18,6 +18,17 @@ public final class MachineRenderer extends VillagerRendererBase<MachineEntity> {
 
     @Override public void render(MachineEntity machine, float partialTicks, PoseStack pose, MultiBufferSource buffer, int light, int overlay) {
         super.render(machine, partialTicks, pose, buffer, light, overlay);
+        if (machine.kind() == MachineKind.BRIBER) {
+            if (machine.getVillagerEntity() == null) return;
+            var direction = machine.isFakeWorld() ? net.minecraft.core.Direction.SOUTH : machine.getBlockState().getValue(MachineBlock.FACING);
+            pose.pushPose();
+            pose.translate(0.5D, 1D / 16D, 0.5D);
+            pose.mulPose(Axis.YP.rotationDegrees(-direction.toYRot()));
+            pose.scale(0.45F, 0.45F, 0.45F);
+            villagerRenderer.render(machine.getVillagerEntity(), 0F, 1F, pose, buffer, light);
+            pose.popPose();
+            return;
+        }
         if (machine.kind() != MachineKind.DESNEURALIZER) {
             TraderRenderer.renderTraderBase(villagerRenderer, machine, partialTicks, pose, buffer, light, overlay);
             return;

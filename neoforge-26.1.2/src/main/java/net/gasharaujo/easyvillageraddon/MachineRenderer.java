@@ -21,6 +21,7 @@ public final class MachineRenderer extends TraderRendererBase<MachineEntity> {
 
     public MachineRenderer(EntityModelSet models, BlockModelResolver blocks) { super(models, blocks); }
     public static final class State extends TraderRenderState {
+        boolean incubator;
         boolean converter;
         boolean renderZombie;
         final ZombieVillagerRenderState zombie = new ZombieVillagerRenderState();
@@ -30,6 +31,7 @@ public final class MachineRenderer extends TraderRendererBase<MachineEntity> {
     @Override public void extractRenderState(MachineEntity machine, TraderRenderState renderState, float partialTicks, Vec3 position, ModelFeatureRenderer.CrumblingOverlay overlay) {
         super.extractRenderState(machine, renderState, partialTicks, position, overlay);
         State state = (State) renderState;
+        state.incubator = machine.kind() == MachineKind.BRIBER;
         state.converter = machine.kind() == MachineKind.DESNEURALIZER;
         state.renderZombie = state.converter && minecraft.level != null;
         if (!state.renderZombie) return;
@@ -41,6 +43,16 @@ public final class MachineRenderer extends TraderRendererBase<MachineEntity> {
 
     @Override public void submit(TraderRenderState renderState, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
         State state = (State) renderState;
+        if (state.incubator) {
+            if (!state.renderVillager) return;
+            pose.pushPose();
+            pose.translate(0.5D, 1D / 16D, 0.5D);
+            pose.mulPose(Axis.YP.rotationDegrees(-state.direction.toYRot()));
+            pose.scale(0.45F, 0.45F, 0.45F);
+            getVillagerRenderer().submit(state.villagerRenderState, pose, collector, camera);
+            pose.popPose();
+            return;
+        }
         if (!state.converter) { super.submit(state, pose, collector, camera); return; }
         if (state.renderVillager) {
             pose.pushPose();

@@ -1,6 +1,12 @@
 # Verificação em 14/10/2026
 
-Versão: `1.0.0`.
+Versão atual: `1.0.1`.
+
+A correção 1.0.1 troca a referência visual do Briber para o Incubator,
+mantendo o piso de esmeralda e centralizando o villager. A compilação foi
+verificada nas três plataformas; o servidor e a captura gráfica dessa correção
+foram verificados no NeoForge 26.1.2. A matriz completa abaixo registra os
+testes da versão 1.0.0, cujas receitas e lógica não foram alteradas.
 
 | Plataforma | Compilação final | Servidor com Easy Villagers |
 | --- | --- | --- |
@@ -74,8 +80,9 @@ Exemplos estão em `docs/ui`.
 
 O marcador `ADDON_CLIENT_MODELS_PASSED count=4` confirma os quatro renderizadores
 nativos registrados e a captura da galeria e de cada bloco no mundo. Os itens
-são desenhados na mão e na hotbar. A caixa do Auto Trader preserva vidro e
-estrutura, com os pisos de diamante/esmeralda/quartzo; o Desneuralizer usa
+são desenhados na mão e na hotbar. Advanced Trader e Leveler usam a caixa do
+Auto Trader com pisos de diamante e quartzo; o Briber usa Incubator com piso
+de esmeralda e villager centralizado. O Desneuralizer usa
 Converter com um zombie villager renderizado no lugar do zumbi.
 Capturas sem edição da galeria e dos quatro blocos estão em `docs/blocks`.
 

@@ -8,7 +8,7 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão `1.0.0`, com quatro blocos e telas específicas:
+Versão `1.0.1`, com quatro blocos e telas específicas:
 
 - **Advanced Trader:** escolhe uma troca de um villager de nível 1 sem XP e repete
   o sorteio normal do Minecraft até encontrá-la. Preserva o conjunto completo
@@ -59,9 +59,10 @@ As quatro receitas usam uma bancada 3 × 3 e produzem um bloco:
 Fraqueza prolongada; duração curta, outras poções e arremessáveis não servem.
 As receitas são liberadas no livro ao obter o bloco central correspondente.
 
-Advanced Trader, Briber e Leveler herdam a caixa de vidro do Auto Trader,
-substituindo somente o piso de netherita por diamante, esmeralda e quartzo,
-respectivamente. O Desneuralizer herda o Converter, com um zombie villager
+Advanced Trader e Leveler herdam a caixa de vidro do Auto Trader,
+substituindo somente o piso de netherita por diamante e quartzo,
+respectivamente. O Briber herda o Incubator, com piso de esmeralda e villager
+centralizado. O Desneuralizer herda o Converter, com um zombie villager
 no lugar do zumbi. O villager em processamento e as bancadas aparecem dentro
 dos blocos. Os modelos e texturas são referenciados diretamente do Easy Villagers
 e do Minecraft, preservando a aparência de resource packs. Os blocos podem ser
@@ -69,7 +70,7 @@ orientados nas quatro direções horizontais ao colocar ou rotacionar.
 
 Da esquerda para a direita: Advanced Trader, Desneuralizer, Briber e Leveler.
 
-![Blocos da versão 1.0 no Minecraft](docs/blocks/machines.png)
+![Blocos no Minecraft](docs/blocks/machines.png)
 
 ## Interface e pesquisa
 
