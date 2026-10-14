@@ -1,8 +1,7 @@
 {
-  "parent": "minecraft:block/orientable",
+  "parent": "easy_villagers:block/auto_trader",
   "textures": {
-    "front": "minecraft:block/bookshelf",
-    "top": "minecraft:block/smithing_table_top",
-    "side": "minecraft:block/iron_block"
+    "back": "minecraft:block/diamond_block",
+    "front": "minecraft:block/diamond_block"
   }
 }

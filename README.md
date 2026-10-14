@@ -8,7 +8,7 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão de desenvolvimento `0.4.1-dev`, com quatro blocos e telas específicas:
+Versão `1.0.0`, com quatro blocos e telas específicas:
 
 - **Advanced Trader:** escolhe uma troca de um villager de nível 1 sem XP e repete
   o sorteio normal do Minecraft até encontrá-la. Preserva o conjunto completo
@@ -40,6 +40,36 @@ intervalo de 400 ticks; o Desneuralizer processa um villager a cada 20 ticks.
 Villagers bebês não são processados. Advanced Trader e Leveler atribuem a
 profissão da estação a villagers sem XP; villagers já negociados mantêm sua
 profissão até passar pelo Desneuralizer ou reinício do Leveler.
+
+## Receitas e aparência
+
+As quatro receitas usam uma bancada 3 × 3 e produzem um bloco:
+
+| Bloco | Linha superior | Linha central | Linha inferior |
+| --- | --- | --- | --- |
+| Advanced Trader | `GGG` | `GTG` | `DDD` |
+| Desneuralizer | `GGG` | `GCG` | `WAW` |
+| Briber | `GGG` | `GTG` | `EEE` |
+| Leveler | `GGG` | `GZG` | `SXS` |
+
+`G`: painel de vidro; `T`: Trader do Easy Villagers; `D`: diamante;
+`C`: Converter do Easy Villagers; `W`: poção comum de Fraqueza de **4:00**;
+`A`: maçã dourada comum; `E`: esmeralda; `Z`: Advanced Trader;
+`X`: Desneuralizer; `S`: bola de slime. As duas poções precisam ser de
+Fraqueza prolongada; duração curta, outras poções e arremessáveis não servem.
+As receitas são liberadas no livro ao obter o bloco central correspondente.
+
+Advanced Trader, Briber e Leveler herdam a caixa de vidro do Auto Trader,
+substituindo somente o piso de netherita por diamante, esmeralda e quartzo,
+respectivamente. O Desneuralizer herda o Converter, com um zombie villager
+no lugar do zumbi. O villager em processamento e as bancadas aparecem dentro
+dos blocos. Os modelos e texturas são referenciados diretamente do Easy Villagers
+e do Minecraft, preservando a aparência de resource packs. Os blocos podem ser
+orientados nas quatro direções horizontais ao colocar ou rotacionar.
+
+Da esquerda para a direita: Advanced Trader, Desneuralizer, Briber e Leveler.
+
+![Blocos da versão 1.0 no Minecraft](docs/blocks/machines.png)
 
 ## Interface e pesquisa
 

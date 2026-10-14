@@ -1,27 +1,27 @@
 {
   "type": "minecraft:crafting_shaped",
-  "result": {
-    "count": 1,
-    "id": "gashs_easy_villager_addon:leveler"
-  },
-  "pattern": [
-    "IGI",
-    "GSG",
-    "ITI"
-  ],
   "category": "misc",
+  "pattern": [
+    "GGG",
+    "GZG",
+    "SXS"
+  ],
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "Z": {
+      "item": "gashs_easy_villager_addon:advanced_trader"
+    },
+    "X": {
+      "item": "gashs_easy_villager_addon:desneuralizer"
     },
     "S": {
-      "item": "minecraft:experience_bottle"
-    },
-    "G": {
-      "item": "minecraft:glass"
-    },
-    "T": {
-      "item": "easy_villagers:trader"
+      "item": "minecraft:slime_ball"
     }
+  },
+  "result": {
+    "id": "gashs_easy_villager_addon:leveler",
+    "count": 1
   }
 }

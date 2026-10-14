@@ -1,8 +1,3 @@
 {
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "minecraft:block/chiseled_stone_bricks",
-    "top": "minecraft:block/smithing_table_top",
-    "side": "minecraft:block/iron_block"
-  }
+  "parent": "easy_villagers:block/converter"
 }

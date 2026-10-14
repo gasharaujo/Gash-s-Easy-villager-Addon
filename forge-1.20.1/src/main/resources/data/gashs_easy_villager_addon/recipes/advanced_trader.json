@@ -1,27 +1,24 @@
 {
   "type": "minecraft:crafting_shaped",
-  "result": {
-    "item": "gashs_easy_villager_addon:advanced_trader",
-    "count": 1
-  },
-  "pattern": [
-    "IGI",
-    "GSG",
-    "ITI"
-  ],
   "category": "misc",
+  "pattern": [
+    "GGG",
+    "GTG",
+    "DDD"
+  ],
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "S": {
-      "item": "minecraft:diamond"
-    },
     "G": {
-      "item": "minecraft:glass"
+      "item": "minecraft:glass_pane"
     },
     "T": {
       "item": "easy_villagers:trader"
+    },
+    "D": {
+      "item": "minecraft:diamond"
     }
+  },
+  "result": {
+    "item": "gashs_easy_villager_addon:advanced_trader",
+    "count": 1
   }
 }

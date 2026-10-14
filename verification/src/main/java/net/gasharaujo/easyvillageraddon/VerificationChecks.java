@@ -20,6 +20,7 @@ public final class VerificationChecks {
         try {
             world = server.overworld();
             world.getChunk(0, 0);
+            VerificationRecipes.run(server);
             advancedTrader();
             desneuralizer();
             briber();

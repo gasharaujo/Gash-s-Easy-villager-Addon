@@ -1,12 +1,12 @@
 # Verificação em 14/10/2026
 
-Versão: `0.4.1-dev`.
+Versão: `1.0.0`.
 
 | Plataforma | Compilação final | Servidor com Easy Villagers |
 | --- | --- | --- |
-| Forge 1.20.1 / 47.4.10 | Passou | 329 verificações passaram |
-| NeoForge 1.21.1 / 21.1.248 | Passou | 329 verificações passaram |
-| NeoForge 26.1.2 / 26.1.2.98 | Passou | 329 verificações passaram |
+| Forge 1.20.1 / 47.4.10 | Passou | 382 verificações passaram |
+| NeoForge 1.21.1 / 21.1.248 | Passou | 382 verificações passaram |
+| NeoForge 26.1.2 / 26.1.2.98 | Passou | 382 verificações passaram |
 
 Easy Villagers: 1.1.39 no Forge; 1.1.47 nas versões NeoForge.
 
@@ -43,10 +43,17 @@ pagamentos/produtos. Uma tentativa de 250 negociações confirma o limite de
 O Advanced Trader mantém 32 sorteios por tick. Os testes do Briber e do
 Desneuralizer confirmam os intervalos anteriores.
 
+Na versão 1.0, as quatro receitas são carregadas pelo gerenciador real e
+executadas com a grade 3 × 3 especificada. Cada resultado contém exatamente
+um bloco. Remover qualquer um dos nove ingredientes ou usar vidro em bloco
+no lugar do painel invalida a receita. O Desneuralizer aceita Fraqueza
+prolongada, inclusive renomeada, e recusa Fraqueza curta, água, Lentidão e
+poção arremessável. Todos os blocos têm quatro estados de orientação.
+
 ## Cliente gráfico
 
-Na versão 0.4.0, as três versões foram abertas no cliente Minecraft em mundos
-isolados. A versão 0.4.1 altera somente o processamento no servidor. O teste
+Na versão 1.0, as três versões foram abertas no cliente Minecraft em mundos
+isolados. O teste
 passou com os marcadores `ADDON_CLIENT_UI_PASSED` e
 `ADDON_CLIENT_REAL_TRADE_PASSED` em Forge 1.20.1, NeoForge 1.21.1 e NeoForge 26.1.2.
 Foram verificadas a renderização das quatro telas, pesquisa por encantamento,
@@ -64,6 +71,13 @@ Desneuralizer usa o fundo de entrada/saída do Incubator. Briber e Leveler têm
 telas compactas próprias sem pagamentos/resultados de negociação manual.
 O autocomplete renderiza acima da lista e os labels estão em português.
 Exemplos estão em `docs/ui`.
+
+O marcador `ADDON_CLIENT_MODELS_PASSED count=4` confirma os quatro renderizadores
+nativos registrados e a captura da galeria e de cada bloco no mundo. Os itens
+são desenhados na mão e na hotbar. A caixa do Auto Trader preserva vidro e
+estrutura, com os pisos de diamante/esmeralda/quartzo; o Desneuralizer usa
+Converter com um zombie villager renderizado no lugar do zumbi.
+Capturas sem edição da galeria e dos quatro blocos estão em `docs/blocks`.
 
 Os JARs finais foram inspecionados: autoria correta, dependências obrigatórias
 sem limites máximos, metadados expandidos e ausência de classes de teste ou

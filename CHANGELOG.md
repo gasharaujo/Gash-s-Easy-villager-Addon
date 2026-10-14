@@ -1,3 +1,13 @@
+# 1.0.0
+
+- Receitas definitivas com painéis de vidro, blocos do Easy Villagers e os
+  materiais especificados; Leveler usa Advanced Trader e Desneuralizer.
+- Desneuralizer exige duas poções comuns de Fraqueza de 4:00 e maçã dourada.
+- Desbloqueio das quatro receitas no livro de receitas.
+- Caixas de vidro do Auto Trader com pisos de diamante, esmeralda e quartzo.
+- Desneuralizer com aparência do Converter e zombie villager no lugar do zumbi.
+- Renderização nativa de villagers/bancadas e orientação horizontal dos blocos.
+
 # 0.4.1-dev
 
 - Leveler sem pausa de 20 ticks: completa até uma tentativa por tick quando há

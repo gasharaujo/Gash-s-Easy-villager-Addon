@@ -26,7 +26,7 @@ final class AddonRegistry {
         for (MachineKind kind : MachineKind.values()) {
             Supplier<MachineBlock> block = BLOCKS.register(kind.id, () -> new MachineBlock(kind, BlockBehaviour.Properties.of().strength(3.0F).requiresCorrectToolForDrops()));
             MACHINES.put(kind, block);
-            ITEMS.register(kind.id, () -> new BlockItem(block.get(), new Item.Properties()));
+            ITEMS.register(kind.id, () -> new MachineItem(block.get(), new Item.Properties()));
         }
         MACHINE = ENTITIES.register("machine", () -> BlockEntityType.Builder.of(MachineEntity::new, MACHINES.values().stream().map(Supplier::get).toArray(Block[]::new)).build(null));
     }

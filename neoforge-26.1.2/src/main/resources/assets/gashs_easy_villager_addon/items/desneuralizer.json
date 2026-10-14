@@ -1,6 +1,7 @@
 {
   "model": {
-    "model": "gashs_easy_villager_addon:item/desneuralizer",
-    "type": "minecraft:model"
+    "type": "minecraft:special",
+    "base": "easy_villagers:item/converter",
+    "model": { "type": "gashs_easy_villager_addon:desneuralizer" }
   }
 }

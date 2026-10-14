@@ -15,9 +15,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
-public final class MachineBlock extends Block implements EntityBlock {
+public final class MachineBlock extends de.maxhenkel.easyvillagers.blocks.VillagerBlockBase implements EntityBlock {
     public final MachineKind kind;
-    MachineBlock(MachineKind kind, Properties properties) { super(properties); this.kind = kind; }
+    MachineBlock(MachineKind kind, Properties properties) { super(properties.noOcclusion()); this.kind = kind; }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new MachineEntity(pos, state); }
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return level.isClientSide() || type != AddonRegistry.MACHINE.get() ? null : (world, pos, s, entity) -> ((MachineEntity) entity).tickServer();

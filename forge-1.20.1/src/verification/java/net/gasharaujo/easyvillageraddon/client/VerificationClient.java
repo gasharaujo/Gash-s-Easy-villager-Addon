@@ -22,12 +22,36 @@ public final class VerificationClient {
             configured = true; mc.options.pauseOnLostFocus = false; mc.options.guiScale().set(3); mc.options.languageCode = "pt_br";
             mc.getLanguageManager().setSelected("pt_br"); mc.reloadResourcePacks();
         }
-        if (stage >= 20) { if (delay > 0) delay--; else mc.stop(); return; }
+        if (stage >= 25) { if (delay > 0) delay--; else mc.stop(); return; }
         if (mc.player == null) return;
+        if (stage >= 20 && stage < 25) {
+            mc.player.setYRot(stage == 20 ? 180F : 135F);
+            mc.player.setXRot(stage == 20 ? 12F : 25F);
+            mc.options.hideGui = stage >= 21;
+        }
         if (delay > 0) { delay--; return; }
-        if (stage >= 20) { mc.stop(); return; }
+        if (stage >= 25) { mc.stop(); return; }
         try {
+            if (stage == 0 && Boolean.getBoolean("addon.modelVerificationOnly")) { command(mc, "gallery"); stage = 20; delay = 60; return; }
             if (stage == 0) { command(mc, "advanced_trader"); stage++; delay = 70; return; }
+            if (stage >= 20) {
+                switch (stage) {
+                    case 20 -> {
+                        for (MachineKind kind : MachineKind.values()) {
+                            var entity = mc.level.getBlockEntity(new net.minecraft.core.BlockPos(kind.ordinal() * 2, 100, 0));
+                            if (!(entity instanceof net.gasharaujo.easyvillageraddon.MachineEntity machine)
+                                    || !(mc.getBlockEntityRenderDispatcher().getRenderer(machine) instanceof net.gasharaujo.easyvillageraddon.MachineRenderer)) throw new AssertionError("Missing native content renderer: " + kind);
+                        }
+                        capture(mc, "11-machines.png"); command(mc, "model_advanced_trader"); stage++; delay = 25;
+                    }
+                    case 21 -> { capture(mc, "12-advanced-trader-model.png"); command(mc, "model_desneuralizer"); stage++; delay = 25; }
+                    case 22 -> { capture(mc, "13-desneuralizer-model.png"); command(mc, "model_briber"); stage++; delay = 25; }
+                    case 23 -> { capture(mc, "14-briber-model.png"); command(mc, "model_leveler"); stage++; delay = 25; }
+                    case 24 -> { capture(mc, "15-leveler-model.png"); System.out.println("ADDON_CLIENT_MODELS_PASSED count=4"); command(mc, "stop"); stage++; delay = 25; }
+                    default -> mc.stop();
+                }
+                return;
+            }
             if (!(mc.screen instanceof MachineScreen screen)) return;
             var menu = screen.getMenu();
             if (!menu.state.hasVillager && menu.kind() != MachineKind.DESNEURALIZER) return;
@@ -113,7 +137,7 @@ public final class VerificationClient {
                 }
                 case 17 -> { if (menu.kind() != MachineKind.BRIBER) return; if (menu.getSlot(2).isActive()) throw new AssertionError("Briber unexpectedly has merchant result"); capture(mc, "06-briber.png"); command(mc, "desneuralizer"); stage++; delay = 35; }
                 case 18 -> { if (menu.kind() != MachineKind.DESNEURALIZER) return; capture(mc, "07-desneuralizer.png"); stage++; delay = 20; }
-                case 19 -> { System.out.println("ADDON_CLIENT_UI_PASSED"); command(mc, "stop"); stage++; delay = 25; }
+                case 19 -> { System.out.println("ADDON_CLIENT_UI_PASSED"); command(mc, "gallery"); stage++; delay = 60; }
                 default -> mc.stop();
             }
         } catch (Throwable failure) {

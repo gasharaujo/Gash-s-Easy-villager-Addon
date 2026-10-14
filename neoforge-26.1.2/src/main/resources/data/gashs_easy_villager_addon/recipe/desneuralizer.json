@@ -1,19 +1,28 @@
 {
   "type": "minecraft:crafting_shaped",
-  "result": {
-    "count": 1,
-    "id": "gashs_easy_villager_addon:desneuralizer"
-  },
-  "pattern": [
-    "IGI",
-    "GSG",
-    "ITI"
-  ],
   "category": "misc",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "WAW"
+  ],
   "key": {
-    "I": "minecraft:iron_ingot",
-    "S": "minecraft:amethyst_shard",
-    "G": "minecraft:glass",
-    "T": "easy_villagers:trader"
+    "G": "minecraft:glass_pane",
+    "C": "easy_villagers:converter",
+    "W": {
+      "neoforge:ingredient_type": "neoforge:components",
+      "items": "minecraft:potion",
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "minecraft:long_weakness"
+        }
+      },
+      "strict": false
+    },
+    "A": "minecraft:golden_apple"
+  },
+  "result": {
+    "id": "gashs_easy_villager_addon:desneuralizer",
+    "count": 1
   }
 }

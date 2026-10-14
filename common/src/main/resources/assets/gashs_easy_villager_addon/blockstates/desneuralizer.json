@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "gashs_easy_villager_addon:block/desneuralizer"
+    },
+    "facing=south": {
+      "model": "gashs_easy_villager_addon:block/desneuralizer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "gashs_easy_villager_addon:block/desneuralizer",
+      "y": 270
+    },
+    "facing=east": {
+      "model": "gashs_easy_villager_addon:block/desneuralizer",
+      "y": 90
     }
   }
 }
