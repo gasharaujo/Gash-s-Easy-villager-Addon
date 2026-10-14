@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class MachineEntity extends VersionedMachineEntity implements net.minecraft.world.WorldlyContainer {
+    private static final int LEVELER_TRADES_PER_TICK = 64;
     TradeCatalog catalog;
     private boolean dropped;
     private int cycleTicks;
@@ -141,11 +142,14 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             }
         }
         if (v.isBaby() || v.isTrading()) return;
+        if (kind() == MachineKind.LEVELER) {
+            if (enabled) leveler(v);
+            return;
+        }
         if (++cycleTicks < 20) return;
         cycleTicks = 0;
         switch (kind()) {
             case BRIBER -> bribe(v);
-            case LEVELER -> { if (enabled) leveler(v); }
             default -> { }
         }
     }
@@ -213,16 +217,29 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
     private void leveler(EasyVillagerEntity v) {
         var goals = effectiveTargets();
         if (goals.isEmpty() || !hasWorkstation()) { status = "gui.gashs_easy_villager_addon.select_target_help"; return; }
-        if (targetsSatisfied(v.getOffers(), Platform.villagerLevel(v))) {
-            enabled = false; status = "gui.gashs_easy_villager_addon.status.target_found"; setChanged(); return;
-        }
         int highestLevel = goals.stream().mapToInt(TradeTarget::level).max().orElse(1);
-        if (Platform.villagerLevel(v) >= highestLevel) {
-            resetProfession(true);
-            attempts++;
-            status = "gui.gashs_easy_villager_addon.status.retry";
-            setChanged(); return;
+        boolean traded = false;
+        // Finish at most one attempt per tick. Large/custom XP requirements
+        // continue next tick; input, output and stock are checked for every trade.
+        for (int trades = 0; trades <= LEVELER_TRADES_PER_TICK; trades++) {
+            if (targetsSatisfied(v.getOffers(), Platform.villagerLevel(v))) {
+                enabled = false; status = "gui.gashs_easy_villager_addon.status.target_found"; setChanged(); break;
+            }
+            if (Platform.villagerLevel(v) >= highestLevel) {
+                resetProfession(true);
+                attempts++;
+                status = "gui.gashs_easy_villager_addon.status.retry";
+                setChanged(); break;
+            }
+            if (trades == LEVELER_TRADES_PER_TICK) break;
+            if (!levelerTrade(v)) { status = "gui.gashs_easy_villager_addon.status.waiting_items"; break; }
+            traded = true;
+            status = "gui.gashs_easy_villager_addon.status.trading";
         }
+        if (traded) { saveVillagerEntity(); setChanged(); }
+    }
+
+    private boolean levelerTrade(EasyVillagerEntity v) {
         for (MerchantOffer offer : v.getOffers()) {
             if (offer.isOutOfStock() || offer.getXp() <= 0) continue;
             List<ItemStack> input = inputCopy();
@@ -234,11 +251,9 @@ public final class MachineEntity extends VersionedMachineEntity implements net.m
             offer.increaseUses();
             v.setVillagerXp(v.getVillagerXp() + offer.getXp());
             if (Platform.canLevelUp(v)) Platform.levelUp(v);
-            saveVillagerEntity();
-            status = "gui.gashs_easy_villager_addon.status.trading";
-            setChanged(); return;
+            return true;
         }
-        status = "gui.gashs_easy_villager_addon.status.waiting_items";
+        return false;
     }
 
     public List<TradeTarget> effectiveTargets() {

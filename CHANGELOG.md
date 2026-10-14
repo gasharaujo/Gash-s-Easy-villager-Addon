@@ -1,3 +1,11 @@
+# 0.4.1-dev
+
+- Leveler sem pausa de 20 ticks: completa até uma tentativa por tick quando há
+  insumos, estoque e espaço na saída.
+- Até 64 negociações pagas por tick; tentativas maiores continuam no tick seguinte.
+- Preserva o limite de 32 sorteios por tick do Advanced Trader e os tempos do
+  Briber e Desneuralizer.
+
 # 0.4.0-dev
 
 - Shift + botão direito com mão principal vazia retira villager e depois bancada,

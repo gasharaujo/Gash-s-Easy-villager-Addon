@@ -24,6 +24,7 @@ public final class VerificationChecks {
             desneuralizer();
             briber();
             leveler();
+            levelerSpeed();
             levelerTargets();
             VerificationMod.menuChecks(machine(MachineKind.ADVANCED_TRADER));
             VerificationMod.interactionChecks(machine(MachineKind.ADVANCED_TRADER));
@@ -93,6 +94,12 @@ public final class VerificationChecks {
         offer.increaseUses();
         ticks(machine, 1);
         check(offer.getUses() == 0, "Advanced Trader resets uses");
+        check(machine.select(VerificationMod.testOffer(new ItemStack(Items.BEDROCK), new ItemStack(Items.BEDROCK))), "Unattainable test target starts a bounded natural search");
+        ticks(machine, 1);
+        check(machine.enabled && machine.attempts == 32, "Advanced Trader retains 32 natural attempts per tick");
+        ticks(machine, 1);
+        check(machine.enabled && machine.attempts == 64, "Advanced Trader retries on consecutive ticks without delay");
+        machine.enabled = false;
         machine.getVillagerEntity().setVillagerXp(1);
         check(!machine.select(mending.orElseThrow()), "Initial selection refuses traded villagers");
         VerificationMod.persistence(machine);
@@ -150,15 +157,13 @@ public final class VerificationChecks {
         machine.inventory.set(9, offer.getCostA().copy());
         machine.inventory.set(10, offer.getCostB().copy());
         for (int slot = 18; slot < 27; slot++) machine.inventory.set(slot, new ItemStack(Items.BEDROCK, 64));
-        ticks(machine, 20);
+        ticks(machine, 1);
         check(villager.getVillagerXp() == 9 && machine.inventory.get(9).getCount() == offer.getCostA().getCount(), "Full output does not consume inputs or grant XP");
         for (int slot = 18; slot < 27; slot++) machine.inventory.set(slot, ItemStack.EMPTY);
-        ticks(machine, 20);
-        check(Platform.villagerLevel(villager) == 2, "Leveler performs a paid trade and levels up");
+        ticks(machine, 1);
         check(!machine.inventory.get(18).isEmpty(), "Leveler saves trade product");
-        ticks(machine, 20);
         check(Platform.villagerLevel(villager) == 1 && villager.getVillagerXp() == 0 && machine.attempts == 1,
-                "Missing target resets profession, level and XP: level=" + Platform.villagerLevel(villager)
+                "Paid level-up and missing target reset finish in one tick: level=" + Platform.villagerLevel(villager)
                         + " xp=" + villager.getVillagerXp() + " attempts=" + machine.attempts + " status=" + machine.status);
         check(!villager.getOffers().isEmpty(), "Reset regenerates novice offers");
         machine.targetLevel = 1;
@@ -166,8 +171,63 @@ public final class VerificationChecks {
         machine.targetResult = found.getResult().copy();
         machine.targetCostA = found.getBaseCostA().copy();
         machine.targetCostB = found.getCostB().copy();
-        ticks(machine, 20);
+        ticks(machine, 1);
         check(!machine.enabled, "Leveler stops when target is found");
+        VerificationMod.persistence(machine);
+    }
+
+    private static void levelerSpeed() {
+        MachineEntity machine = machine(MachineKind.LEVELER);
+        var villager = machine.getVillagerEntity();
+        machine.targetResult = new ItemStack(Items.BEDROCK);
+        machine.targetCostA = new ItemStack(Items.BEDROCK);
+        machine.enabled = true;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            ticks(machine, 1);
+            check(machine.attempts == attempt, "Leveler completes one novice retry on consecutive tick " + attempt);
+        }
+        machine.enabled = false; ticks(machine, 1);
+        check(machine.attempts == 3, "Paused Leveler does not retry");
+
+        machine.targetLevel = 2; machine.attempts = 0; machine.enabled = true;
+        var offers = new net.minecraft.world.item.trading.MerchantOffers();
+        offers.add(VerificationMod.testOffer(new ItemStack(Items.EMERALD), new ItemStack(Items.DIAMOND)));
+        villager.setOffers(offers);
+        machine.inventory.set(9, new ItemStack(Items.DIAMOND, 64));
+        ticks(machine, 1);
+        check(machine.attempts == 1 && Platform.villagerLevel(villager) == 1 && villager.getVillagerXp() == 0,
+                "Ten paid trades, unlock, target check and reset complete in one tick");
+        check(machine.inventory.get(9).getCount() == 54 && machine.inventory.get(18).getCount() == 10,
+                "Fast attempt pays for every trade and retains every product");
+
+        offers = new net.minecraft.world.item.trading.MerchantOffers();
+        offers.add(VerificationMod.testOffer(new ItemStack(Items.EMERALD), new ItemStack(Items.DIAMOND)));
+        villager.setOffers(offers); machine.attempts = 0;
+        for (int slot = 18; slot < 27; slot++) machine.inventory.set(slot, new ItemStack(Items.BEDROCK, 64));
+        machine.inventory.set(26, new ItemStack(Items.EMERALD, 63));
+        ticks(machine, 1);
+        check(villager.getVillagerXp() == 1 && machine.inventory.get(9).getCount() == 53 && machine.inventory.get(26).getCount() == 64,
+                "Fast batch stops immediately when the last output space fills");
+        ticks(machine, 1);
+        check(villager.getVillagerXp() == 1 && machine.inventory.get(9).getCount() == 53 && machine.attempts == 0,
+                "Full output on consecutive tick cannot consume another payment");
+
+        for (int slot = 9; slot < 18; slot++) machine.inventory.set(slot, new ItemStack(Items.EMERALD, 64));
+        for (int slot = 18; slot < 27; slot++) machine.inventory.set(slot, ItemStack.EMPTY);
+        villager.setVillagerXp(0); machine.targetLevel = 5;
+        offers = new net.minecraft.world.item.trading.MerchantOffers();
+        offers.add(Platform.unlimited(VerificationMod.testOffer(new ItemStack(Items.DIAMOND), new ItemStack(Items.EMERALD)), villager));
+        villager.setOffers(offers);
+        ticks(machine, 1);
+        check(villager.getVillagerXp() == 64 && machine.attempts == 0, "Large attempt is bounded to 64 paid trades per tick");
+        ticks(machine, 1);
+        check(villager.getVillagerXp() == 128 && machine.attempts == 0, "Bounded attempt resumes on the very next tick");
+        ticks(machine, 2);
+        check(machine.attempts == 1 && villager.getVillagerXp() == 0 && Platform.villagerLevel(villager) == 1,
+                "Large attempt completes and resets at the actual unlock level");
+        check(machine.inventory.subList(9, 18).stream().mapToInt(ItemStack::getCount).sum() == 326
+                        && machine.inventory.subList(18, 27).stream().mapToInt(ItemStack::getCount).sum() == 250,
+                "Bounded attempt consumes and produces exactly 250 trades without starting a second attempt");
         VerificationMod.persistence(machine);
     }
 
@@ -202,11 +262,11 @@ public final class VerificationChecks {
         var v = machine.getVillagerEntity();
         while (Platform.villagerLevel(v) < 5) Platform.levelUp(v);
         var offers = new net.minecraft.world.item.trading.MerchantOffers(); offers.add(variant); v.setOffers(offers);
-        machine.enabled = true; ticks(machine, 20);
+        machine.enabled = true; ticks(machine, 1);
         check(machine.enabled && machine.attempts == 1 && Platform.villagerLevel(v) == 1, "AND resets and continues when only one target exists at the highest level");
         while (Platform.villagerLevel(v) < 5) Platform.levelUp(v);
         offers = new net.minecraft.world.item.trading.MerchantOffers(); offers.add(variant); offers.add(other); v.setOffers(offers);
-        ticks(machine, 20);
+        ticks(machine, 1);
         check(!machine.enabled && machine.status.endsWith("target_found"), "AND automation stops after all targets are found together");
         machine.removeTarget(0);
         check(machine.targets.size() == 1 && !machine.targets.get(0).generic(), "Selected target can be removed independently");

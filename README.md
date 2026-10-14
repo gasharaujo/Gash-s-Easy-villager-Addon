@@ -8,7 +8,7 @@ Dependência obrigatória: [Easy Villagers](https://github.com/henkelmax/easy-vi
 
 ## Estado do projeto
 
-Versão de desenvolvimento `0.4.0-dev`, com quatro blocos e telas específicas:
+Versão de desenvolvimento `0.4.1-dev`, com quatro blocos e telas específicas:
 
 - **Advanced Trader:** escolhe uma troca de um villager de nível 1 sem XP e repete
   o sorteio normal do Minecraft até encontrá-la. Preserva o conjunto completo
@@ -29,7 +29,13 @@ Versão de desenvolvimento `0.4.0-dev`, com quatro blocos e telas específicas:
   para ao encontrar qualquer alvo; **E (AND)** exige todos no mesmo villager.
   Se a condição não for cumprida até o maior nível selecionado, reinicia
   profissão, nível e XP e repete.
+  Executa a cada tick e conclui até uma tentativa por tick, com limite de 64
+  negociações pagas por tick. Se precisar de mais, continua no tick seguinte;
+  falta de insumos, estoque esgotado ou saída cheia interrompem o processamento.
   Os insumos consumidos em tentativas anteriores não são reembolsados.
+
+O Advanced Trader faz até 32 sorteios naturais por tick. O Briber mantém seu
+intervalo de 400 ticks; o Desneuralizer processa um villager a cada 20 ticks.
 
 Villagers bebês não são processados. Advanced Trader e Leveler atribuem a
 profissão da estação a villagers sem XP; villagers já negociados mantêm sua

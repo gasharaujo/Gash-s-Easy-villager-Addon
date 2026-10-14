@@ -1,12 +1,12 @@
 # Verificação em 14/10/2026
 
-Versão: `0.4.0-dev`.
+Versão: `0.4.1-dev`.
 
 | Plataforma | Compilação final | Servidor com Easy Villagers |
 | --- | --- | --- |
-| Forge 1.20.1 / 47.4.10 | Passou | 287 verificações passaram |
-| NeoForge 1.21.1 / 21.1.248 | Passou | 287 verificações passaram |
-| NeoForge 26.1.2 / 26.1.2.98 | Passou | 287 verificações passaram |
+| Forge 1.20.1 / 47.4.10 | Passou | 329 verificações passaram |
+| NeoForge 1.21.1 / 21.1.248 | Passou | 329 verificações passaram |
+| NeoForge 26.1.2 / 26.1.2.98 | Passou | 329 verificações passaram |
 
 Easy Villagers: 1.1.39 no Forge; 1.1.47 nas versões NeoForge.
 
@@ -35,9 +35,18 @@ encantamento, seleção entre níveis, OU antecipado, E com todos no mesmo villa
 reinício quando só parte dos alvos aparece, remoção/limpeza e migração do alvo
 único. Os alvos, componentes, níveis e modo E/OU sobrevivem ao salvamento.
 
+Na versão 0.4.1, os testes verificam tentativas consecutivas a cada tick,
+dez negociações pagas com subida de nível e reinício no mesmo tick, parada
+imediata quando o último espaço da saída enche e preservação de todos os
+pagamentos/produtos. Uma tentativa de 250 negociações confirma o limite de
+64 por tick, continuidade no tick seguinte e somente um reinício por tick.
+O Advanced Trader mantém 32 sorteios por tick. Os testes do Briber e do
+Desneuralizer confirmam os intervalos anteriores.
+
 ## Cliente gráfico
 
-As três versões foram abertas no cliente Minecraft em mundos isolados. O teste
+Na versão 0.4.0, as três versões foram abertas no cliente Minecraft em mundos
+isolados. A versão 0.4.1 altera somente o processamento no servidor. O teste
 passou com os marcadores `ADDON_CLIENT_UI_PASSED` e
 `ADDON_CLIENT_REAL_TRADE_PASSED` em Forge 1.20.1, NeoForge 1.21.1 e NeoForge 26.1.2.
 Foram verificadas a renderização das quatro telas, pesquisa por encantamento,
