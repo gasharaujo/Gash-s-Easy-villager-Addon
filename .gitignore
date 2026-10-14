@@ -1,0 +1,16 @@
+.gradle/
+**/build/
+**/bin/
+**/run/
+**/run-client/
+**/run-server/
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+local.properties
+*.log
+artifacts/
+.reference/

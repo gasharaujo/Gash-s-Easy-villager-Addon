@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "gashs_easy_villager_addon:desneuralizer",
+    "gashs_easy_villager_addon:leveler",
+    "gashs_easy_villager_addon:advanced_trader",
+    "gashs_easy_villager_addon:briber"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "count": 1,
+    "id": "gashs_easy_villager_addon:leveler"
+  },
+  "pattern": [
+    "IGI",
+    "GSG",
+    "ITI"
+  ],
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "S": "minecraft:experience_bottle",
+    "G": "minecraft:glass",
+    "T": "easy_villagers:trader"
+  }
+}

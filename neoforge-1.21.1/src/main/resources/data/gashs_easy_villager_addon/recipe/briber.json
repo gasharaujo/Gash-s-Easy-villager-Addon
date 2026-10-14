@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "result": {
+    "count": 1,
+    "id": "gashs_easy_villager_addon:briber"
+  },
+  "pattern": [
+    "IGI",
+    "GSG",
+    "ITI"
+  ],
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:emerald_block"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "T": {
+      "item": "easy_villagers:trader"
+    }
+  }
+}
